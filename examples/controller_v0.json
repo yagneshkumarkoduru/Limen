@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "assistive_controller_v0",
+  "sensors": [
+    {
+      "name": "emg_primary",
+      "type": "emg",
+      "channels": 8,
+      "sample_rate_hz": 1000,
+      "noise_threshold": 20
+    },
+    {
+      "name": "imu_joint",
+      "type": "imu",
+      "channels": 6,
+      "sample_rate_hz": 100,
+      "noise_threshold": 0.05
+    }
+  ],
+  "intent_classes": ["rest", "knee_flexion", "knee_extension"],
+  "actuator": {
+    "name": "knee_assist_servo",
+    "max_torque_nm": 25,
+    "max_velocity_rad_s": 3,
+    "position_min_rad": -1.2,
+    "position_max_rad": 1.2
+  },
+  "fault_paths": [
+    {"sensor": "emg_primary", "action": "safe_halt"},
+    {"sensor": "imu_joint",   "action": "hold_position"}
+  ]
+}
