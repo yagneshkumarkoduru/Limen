@@ -1,6 +1,6 @@
 # Limen Evidence Record
 
-Maintained by: Yagnesh Kumar Koduru
+Maintained by: Koduru Yagnesh Kumar
 Updated: 2026-09-12
 Status: Software simulation stage. No hardware runs yet.
 
