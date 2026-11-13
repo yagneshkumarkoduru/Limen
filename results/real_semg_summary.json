@@ -1,0 +1,101 @@
+{
+  "dataset": "uci-semg-basic-hand-movements-db1",
+  "protocols": {
+    "within_subject": {
+      "cv_accuracy_train_only": {
+        "lda-time": 0.441045,
+        "lda-rich": 0.452168,
+        "rf-rich": 0.76657
+      },
+      "selected_model_by_cv": "rf-rich",
+      "runs": {
+        "lda-time|clean": {
+          "n_runs": 1,
+          "accuracy_mean": 0.447728,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.903895,
+          "accuracy_on_accepted_mean": 0.541726
+        },
+        "lda-time|fault_injected": {
+          "n_runs": 1,
+          "accuracy_mean": 0.331959,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.926537,
+          "accuracy_on_accepted_mean": 0.388643
+        },
+        "lda-rich|clean": {
+          "n_runs": 1,
+          "accuracy_mean": 0.403713,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.901355,
+          "accuracy_on_accepted_mean": 0.479297
+        },
+        "lda-rich|fault_injected": {
+          "n_runs": 1,
+          "accuracy_mean": 0.294044,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.930326,
+          "accuracy_on_accepted_mean": 0.298864
+        },
+        "rf-rich|clean": {
+          "n_runs": 1,
+          "accuracy_mean": 0.779668,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.4916,
+          "accuracy_on_accepted_mean": 0.792483
+        },
+        "rf-rich|fault_injected": {
+          "n_runs": 1,
+          "accuracy_mean": 0.503656,
+          "accuracy_std": 0.0,
+          "rejection_mean": 0.755498,
+          "accuracy_on_accepted_mean": 0.667012
+        }
+      }
+    },
+    "loso": {
+      "lda-time|clean": {
+        "n_runs": 5,
+        "accuracy_mean": 0.275212,
+        "accuracy_std": 0.084455,
+        "rejection_mean": 0.820256,
+        "accuracy_on_accepted_mean": 0.288912
+      },
+      "lda-time|fault_injected": {
+        "n_runs": 5,
+        "accuracy_mean": 0.237889,
+        "accuracy_std": 0.038374,
+        "rejection_mean": 0.875666,
+        "accuracy_on_accepted_mean": 0.22533
+      },
+      "lda-rich|clean": {
+        "n_runs": 5,
+        "accuracy_mean": 0.281451,
+        "accuracy_std": 0.088129,
+        "rejection_mean": 0.751894,
+        "accuracy_on_accepted_mean": 0.260852
+      },
+      "lda-rich|fault_injected": {
+        "n_runs": 5,
+        "accuracy_mean": 0.228045,
+        "accuracy_std": 0.037263,
+        "rejection_mean": 0.844448,
+        "accuracy_on_accepted_mean": 0.225698
+      },
+      "rf-rich|clean": {
+        "n_runs": 5,
+        "accuracy_mean": 0.264441,
+        "accuracy_std": 0.098578,
+        "rejection_mean": 0.702302,
+        "accuracy_on_accepted_mean": 0.270337
+      },
+      "rf-rich|fault_injected": {
+        "n_runs": 5,
+        "accuracy_mean": 0.234589,
+        "accuracy_std": 0.043998,
+        "rejection_mean": 0.853314,
+        "accuracy_on_accepted_mean": 0.245691
+      }
+    }
+  }
+}

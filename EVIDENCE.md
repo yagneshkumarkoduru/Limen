@@ -25,14 +25,14 @@ Signal: EMG 1000 Hz x 8 channels, IMU 100 Hz, window 200 ms, stride 20 ms
 | temporal-lda-smoothing | 4365 | 1.0000 | 0.0000 | 0.0000 |
 
 Envelope events (clean): 4365 nominal, 0 degraded, 0 safe_halt
-End-to-end latency (classical-lda, clean): p50 0.3242 ms, p95 0.8399 ms, p99 1.1774 ms, max 3.1236 ms
+End-to-end latency (classical-lda, clean): p50 0.3242 ms, p95 0.82 ms, p99 1.1774 ms, max 3.1236 ms
 
 ### 1b. Fault-injected condition
 
 | Model | Eval windows | Accuracy | Rejection rate | Safe-halt events |
 |---|---|---|---|---|
-| classical-lda | 4365 | 0.9883 | 0.0708 | 300 |
-| temporal-lda-smoothing | 4365 | 0.9885 | 0.0779 | 300 |
+| classical-lda | 4365 | 0.9883 | 0.0708 | 287 |
+| temporal-lda-smoothing | 4365 | 0.9885 | 0.0779 | 287 |
 
 Fault schedule: channel 1 dropout at 3.0 s, motion artifact at 4.5 s
 (amplitude 8x nominal), burst duration 250 ms.

@@ -1,0 +1,760 @@
+{
+  "report": "Limen EMG/IMU Safety Benchmark",
+  "generated_utc": "2026-11-13T17:50:07+00:00",
+  "dataset": {
+    "source": "uci-semg-basic-hand-movements-db1",
+    "license": "CC BY 4.0 (DOI 10.24432/C5TK53)",
+    "kind": "real",
+    "protocol": "within-subject, trial-disjoint, 18/12 trials per class"
+  },
+  "configuration": {
+    "seed": 20260722,
+    "intent_classes": [
+      "cyl",
+      "hook",
+      "tip",
+      "palm",
+      "spher",
+      "lat"
+    ],
+    "emg_sample_rate_hz": 1000,
+    "imu_sample_rate_hz": 100,
+    "n_emg_channels": 2,
+    "window_ms": 200,
+    "stride_ms": 20,
+    "bandpass_hz": [
+      20.0,
+      450.0
+    ],
+    "notch_hz": 50.0,
+    "safety": {
+      "t_high": 0.75,
+      "t_low": 0.45,
+      "degraded_velocity_scale": 0.5,
+      "degraded_force_scale": 0.4,
+      "hard_max_torque_nm": 40.0,
+      "hard_max_velocity_rad_s": 6.0,
+      "persistence_windows": 3
+    }
+  },
+  "environment": {
+    "python": "3.11.15",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "scikit_learn": "1.6.1",
+    "os": "Windows-10-10.0.26300-SP0",
+    "hardware": "AMD64 (development workstation; no embedded target yet)"
+  },
+  "runs": [
+    {
+      "model": "lda-time",
+      "condition": "clean",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.47689,
+      "accuracy_on_accepted": 0.582207,
+      "false_activation_rate": null,
+      "rejection_rate": 0.888106,
+      "envelope_events": {
+        "nominal": 11722,
+        "degraded": 37410,
+        "safe_halt": 55628
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            10235,
+            1777,
+            734,
+            1529,
+            1636,
+            1549
+          ],
+          [
+            4426,
+            9046,
+            342,
+            1267,
+            1713,
+            666
+          ],
+          [
+            1042,
+            1,
+            8706,
+            3532,
+            0,
+            4179
+          ],
+          [
+            3312,
+            70,
+            4589,
+            6129,
+            202,
+            3158
+          ],
+          [
+            2912,
+            5572,
+            185,
+            598,
+            7948,
+            245
+          ],
+          [
+            2352,
+            154,
+            4948,
+            2109,
+            2,
+            7895
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.098,
+          "p95_ms": 0.1889,
+          "p99_ms": 0.3125,
+          "max_ms": 7.9905,
+          "mean_ms": 0.1195
+        },
+        "inference": {
+          "p50_ms": 0.174,
+          "p95_ms": 0.3446,
+          "p99_ms": 0.5124,
+          "max_ms": 55.6785,
+          "mean_ms": 0.2094
+        },
+        "decision_loop": {
+          "p50_ms": 0.1154,
+          "p95_ms": 0.2219,
+          "p99_ms": 0.3515,
+          "max_ms": 8.3151,
+          "mean_ms": 0.1382
+        },
+        "end_to_end": {
+          "p50_ms": 0.3923,
+          "p95_ms": 0.7519,
+          "p99_ms": 1.0343,
+          "max_ms": 55.9993,
+          "mean_ms": 0.4671
+        }
+      }
+    },
+    {
+      "model": "lda-time",
+      "condition": "fault_injected",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.381987,
+      "accuracy_on_accepted": 0.494346,
+      "false_activation_rate": null,
+      "rejection_rate": 0.923129,
+      "envelope_events": {
+        "nominal": 8053,
+        "degraded": 37045,
+        "safe_halt": 59662
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            9599,
+            1276,
+            543,
+            578,
+            1351,
+            4113
+          ],
+          [
+            6286,
+            7954,
+            311,
+            536,
+            1294,
+            1079
+          ],
+          [
+            1641,
+            1,
+            4213,
+            1809,
+            0,
+            9796
+          ],
+          [
+            4132,
+            67,
+            2203,
+            3027,
+            199,
+            7832
+          ],
+          [
+            5265,
+            6145,
+            176,
+            435,
+            4592,
+            847
+          ],
+          [
+            3182,
+            74,
+            2544,
+            1026,
+            2,
+            10632
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1048,
+          "p95_ms": 0.202,
+          "p99_ms": 0.3225,
+          "max_ms": 9.6616,
+          "mean_ms": 0.1281
+        },
+        "inference": {
+          "p50_ms": 0.1955,
+          "p95_ms": 0.3763,
+          "p99_ms": 0.5542,
+          "max_ms": 80.6433,
+          "mean_ms": 0.2298
+        },
+        "decision_loop": {
+          "p50_ms": 0.1265,
+          "p95_ms": 0.2413,
+          "p99_ms": 0.3765,
+          "max_ms": 7.2123,
+          "mean_ms": 0.1503
+        },
+        "end_to_end": {
+          "p50_ms": 0.4358,
+          "p95_ms": 0.8106,
+          "p99_ms": 1.1029,
+          "max_ms": 81.0112,
+          "mean_ms": 0.5082
+        }
+      }
+    },
+    {
+      "model": "lda-rich",
+      "condition": "clean",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.482111,
+      "accuracy_on_accepted": 0.561631,
+      "false_activation_rate": null,
+      "rejection_rate": 0.87753,
+      "envelope_events": {
+        "nominal": 12830,
+        "degraded": 53297,
+        "safe_halt": 38633
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            11060,
+            2140,
+            304,
+            1489,
+            1766,
+            701
+          ],
+          [
+            4685,
+            9467,
+            234,
+            1003,
+            1776,
+            295
+          ],
+          [
+            1769,
+            2,
+            8217,
+            4701,
+            0,
+            2771
+          ],
+          [
+            3236,
+            120,
+            4262,
+            7151,
+            226,
+            2465
+          ],
+          [
+            2762,
+            5650,
+            161,
+            515,
+            8103,
+            269
+          ],
+          [
+            2549,
+            222,
+            4707,
+            3472,
+            2,
+            6508
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2723,
+          "p95_ms": 0.5141,
+          "p99_ms": 0.7203,
+          "max_ms": 11.6135,
+          "mean_ms": 0.3216
+        },
+        "inference": {
+          "p50_ms": 0.1904,
+          "p95_ms": 0.3636,
+          "p99_ms": 0.5323,
+          "max_ms": 120.0701,
+          "mean_ms": 0.2244
+        },
+        "decision_loop": {
+          "p50_ms": 0.122,
+          "p95_ms": 0.23,
+          "p99_ms": 0.356,
+          "max_ms": 7.0778,
+          "mean_ms": 0.1434
+        },
+        "end_to_end": {
+          "p50_ms": 0.5933,
+          "p95_ms": 1.0841,
+          "p99_ms": 1.4275,
+          "max_ms": 120.5749,
+          "mean_ms": 0.6893
+        }
+      }
+    },
+    {
+      "model": "lda-rich",
+      "condition": "fault_injected",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.331739,
+      "accuracy_on_accepted": 0.344824,
+      "false_activation_rate": null,
+      "rejection_rate": 0.918385,
+      "envelope_events": {
+        "nominal": 8550,
+        "degraded": 69078,
+        "safe_halt": 27132
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            5433,
+            1278,
+            299,
+            8303,
+            1440,
+            707
+          ],
+          [
+            2449,
+            5643,
+            228,
+            7485,
+            1334,
+            321
+          ],
+          [
+            1525,
+            2,
+            3879,
+            9271,
+            0,
+            2783
+          ],
+          [
+            2319,
+            109,
+            2025,
+            10708,
+            222,
+            2077
+          ],
+          [
+            1369,
+            3298,
+            161,
+            7656,
+            4685,
+            291
+          ],
+          [
+            1896,
+            104,
+            2364,
+            8689,
+            2,
+            4405
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2685,
+          "p95_ms": 0.5024,
+          "p99_ms": 0.6876,
+          "max_ms": 10.0231,
+          "mean_ms": 0.314
+        },
+        "inference": {
+          "p50_ms": 0.1877,
+          "p95_ms": 0.3527,
+          "p99_ms": 0.5037,
+          "max_ms": 139.6324,
+          "mean_ms": 0.2191
+        },
+        "decision_loop": {
+          "p50_ms": 0.1209,
+          "p95_ms": 0.2251,
+          "p99_ms": 0.3472,
+          "max_ms": 29.9009,
+          "mean_ms": 0.1414
+        },
+        "end_to_end": {
+          "p50_ms": 0.5849,
+          "p95_ms": 1.0557,
+          "p99_ms": 1.3611,
+          "max_ms": 140.1702,
+          "mean_ms": 0.6746
+        }
+      }
+    },
+    {
+      "model": "rf-rich",
+      "condition": "clean",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.761932,
+      "accuracy_on_accepted": 0.777574,
+      "false_activation_rate": null,
+      "rejection_rate": 0.538956,
+      "envelope_events": {
+        "nominal": 48299,
+        "degraded": 52404,
+        "safe_halt": 4057
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            13502,
+            1176,
+            401,
+            529,
+            1570,
+            282
+          ],
+          [
+            1163,
+            13495,
+            260,
+            628,
+            1461,
+            453
+          ],
+          [
+            480,
+            163,
+            13222,
+            1527,
+            26,
+            2042
+          ],
+          [
+            969,
+            459,
+            1895,
+            12342,
+            145,
+            1650
+          ],
+          [
+            1730,
+            1100,
+            315,
+            264,
+            13820,
+            231
+          ],
+          [
+            223,
+            270,
+            1811,
+            1664,
+            53,
+            13439
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4041,
+          "p95_ms": 0.6364,
+          "p99_ms": 2.5947,
+          "max_ms": 20.6677,
+          "mean_ms": 0.4965
+        },
+        "inference": {
+          "p50_ms": 16.5414,
+          "p95_ms": 36.6639,
+          "p99_ms": 58.8381,
+          "max_ms": 1627.828,
+          "mean_ms": 19.2201
+        },
+        "decision_loop": {
+          "p50_ms": 0.2606,
+          "p95_ms": 0.4125,
+          "p99_ms": 0.8053,
+          "max_ms": 25.4602,
+          "mean_ms": 0.3049
+        },
+        "end_to_end": {
+          "p50_ms": 17.2864,
+          "p95_ms": 37.9534,
+          "p99_ms": 59.9404,
+          "max_ms": 1628.6551,
+          "mean_ms": 20.0216
+        }
+      }
+    },
+    {
+      "model": "rf-rich",
+      "condition": "fault_injected",
+      "train_windows": 157140,
+      "eval_windows": 104760,
+      "accuracy": 0.508114,
+      "accuracy_on_accepted": 0.706458,
+      "false_activation_rate": null,
+      "rejection_rate": 0.778637,
+      "envelope_events": {
+        "nominal": 23190,
+        "degraded": 33112,
+        "safe_halt": 48458
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            13183,
+            929,
+            676,
+            853,
+            1439,
+            380
+          ],
+          [
+            3208,
+            9095,
+            1399,
+            1148,
+            2133,
+            477
+          ],
+          [
+            5399,
+            103,
+            7143,
+            766,
+            386,
+            3663
+          ],
+          [
+            6175,
+            371,
+            2451,
+            6076,
+            415,
+            1972
+          ],
+          [
+            4345,
+            2379,
+            482,
+            1833,
+            8157,
+            264
+          ],
+          [
+            4586,
+            135,
+            1601,
+            827,
+            735,
+            9576
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.3979,
+          "p95_ms": 0.6316,
+          "p99_ms": 2.6672,
+          "max_ms": 18.2584,
+          "mean_ms": 0.4918
+        },
+        "inference": {
+          "p50_ms": 16.2414,
+          "p95_ms": 36.976,
+          "p99_ms": 58.6739,
+          "max_ms": 246.4435,
+          "mean_ms": 19.0844
+        },
+        "decision_loop": {
+          "p50_ms": 0.2588,
+          "p95_ms": 0.4128,
+          "p99_ms": 0.7984,
+          "max_ms": 27.7298,
+          "mean_ms": 0.3037
+        },
+        "end_to_end": {
+          "p50_ms": 16.988,
+          "p95_ms": 38.2897,
+          "p99_ms": 59.9762,
+          "max_ms": 247.086,
+          "mean_ms": 19.88
+        }
+      }
+    }
+  ],
+  "failure_cases": [
+    "[lda-time/clean] 54801 misclassified windows: spher->hook x5572, lat->tip x4948, palm->tip x4589, hook->cyl x4426, tip->lat x4179, tip->palm x3532, palm->cyl x3312, palm->lat x3158, spher->cyl x2912, lat->cyl x2352, lat->palm x2109, cyl->hook x1777, hook->spher x1713, cyl->spher x1636, cyl->lat x1549, cyl->palm x1529, hook->palm x1267, tip->cyl x1042, cyl->tip x734, hook->lat x666, spher->palm x598, hook->tip x342, spher->lat x245, palm->spher x202, spher->tip x185, lat->hook x154, palm->hook x70, lat->spher x2, tip->hook x1",
+    "[lda-time/fault_injected] 64743 misclassified windows: tip->lat x9796, palm->lat x7832, hook->cyl x6286, spher->hook x6145, spher->cyl x5265, palm->cyl x4132, cyl->lat x4113, lat->cyl x3182, lat->tip x2544, palm->tip x2203, tip->palm x1809, tip->cyl x1641, cyl->spher x1351, hook->spher x1294, cyl->hook x1276, hook->lat x1079, lat->palm x1026, spher->lat x847, cyl->palm x578, cyl->tip x543, hook->palm x536, spher->palm x435, hook->tip x311, palm->spher x199, spher->tip x176, lat->hook x74, palm->hook x67, lat->spher x2, tip->hook x1",
+    "[lda-rich/clean] 54254 misclassified windows: spher->hook x5650, lat->tip x4707, tip->palm x4701, hook->cyl x4685, palm->tip x4262, lat->palm x3472, palm->cyl x3236, tip->lat x2771, spher->cyl x2762, lat->cyl x2549, palm->lat x2465, cyl->hook x2140, hook->spher x1776, tip->cyl x1769, cyl->spher x1766, cyl->palm x1489, hook->palm x1003, cyl->lat x701, spher->palm x515, cyl->tip x304, hook->lat x295, spher->lat x269, hook->tip x234, palm->spher x226, lat->hook x222, spher->tip x161, palm->hook x120, tip->hook x2, lat->spher x2",
+    "[lda-rich/fault_injected] 70007 misclassified windows: tip->palm x9271, lat->palm x8689, cyl->palm x8303, spher->palm x7656, hook->palm x7485, spher->hook x3298, tip->lat x2783, hook->cyl x2449, lat->tip x2364, palm->cyl x2319, palm->lat x2077, palm->tip x2025, lat->cyl x1896, tip->cyl x1525, cyl->spher x1440, spher->cyl x1369, hook->spher x1334, cyl->hook x1278, cyl->lat x707, hook->lat x321, cyl->tip x299, spher->lat x291, hook->tip x228, palm->spher x222, spher->tip x161, palm->hook x109, lat->hook x104, tip->hook x2, lat->spher x2",
+    "[rf-rich/clean] 24940 misclassified windows: tip->lat x2042, palm->tip x1895, lat->tip x1811, spher->cyl x1730, lat->palm x1664, palm->lat x1650, cyl->spher x1570, tip->palm x1527, hook->spher x1461, cyl->hook x1176, hook->cyl x1163, spher->hook x1100, palm->cyl x969, hook->palm x628, cyl->palm x529, tip->cyl x480, palm->hook x459, hook->lat x453, cyl->tip x401, spher->tip x315, cyl->lat x282, lat->hook x270, spher->palm x264, hook->tip x260, spher->lat x231, lat->cyl x223, tip->hook x163, palm->spher x145, lat->spher x53, tip->spher x26",
+    "[rf-rich/fault_injected] 51530 misclassified windows: palm->cyl x6175, tip->cyl x5399, lat->cyl x4586, spher->cyl x4345, tip->lat x3663, hook->cyl x3208, palm->tip x2451, spher->hook x2379, hook->spher x2133, palm->lat x1972, spher->palm x1833, lat->tip x1601, cyl->spher x1439, hook->tip x1399, hook->palm x1148, cyl->hook x929, cyl->palm x853, lat->palm x827, tip->palm x766, lat->spher x735, cyl->tip x676, spher->tip x482, hook->lat x477, palm->spher x415, tip->spher x386, cyl->lat x380, palm->hook x371, spher->lat x264, lat->hook x135, tip->hook x103"
+  ],
+  "research_gate": {
+    "status": "PASS",
+    "decision_windows_evaluated": 628560,
+    "fallback_events_recorded": 515916,
+    "accuracy_floor": 0.25,
+    "checks": {
+      "pipeline_runs_end_to_end": true,
+      "p95_latency_reported": true,
+      "fallback_condition_implemented": true,
+      "accuracy_above_chance": true,
+      "reproducibility_controls_present": true,
+      "limitations_stated": true
+    }
+  },
+  "limitations": [
+    "Real surface-EMG dataset (within-subject, trial-disjoint, 18/12 trials per class); accuracy is not comparable across protocols (within-subject vs leave-one-subject-out differ substantially) and must not be quoted without the protocol.",
+    "Zero-phase offline filtering (filtfilt) is used for replay; an online causal filter will add group delay on hardware.",
+    "Latency is measured on a development workstation under a general-purpose OS; it establishes software cost order-of-magnitude, not embedded worst-case execution time.",
+    "Power is not measured in software; the eventized scheduler addresses the power budget on target hardware.",
+    "Torque/velocity values are simulated actuator abstractions, not physical joint torques."
+  ],
+  "next_hardware_implication": "If p95 decision-loop + inference latency remains well under the 20 ms stride budget on this workstation class, an MCU (Cortex-M7-class) is the justified first target; FPGA acceleration is revisited only if measured online inference or multi-channel preprocessing exceeds the budget.",
+  "cv_accuracy_train_only": {
+    "lda-time": 0.462025,
+    "lda-rich": 0.469121,
+    "rf-rich": 0.745036
+  },
+  "per_subject_accuracy": {
+    "lda-time|clean": {
+      "female_1": 0.517803,
+      "female_2": 0.364023,
+      "female_3": 0.581615,
+      "male_1": 0.442583,
+      "male_2": 0.478427
+    },
+    "lda-time|fault_injected": {
+      "female_1": 0.425401,
+      "female_2": 0.304124,
+      "female_3": 0.443919,
+      "male_1": 0.428408,
+      "male_2": 0.308085
+    },
+    "lda-rich|clean": {
+      "female_1": 0.55861,
+      "female_2": 0.324026,
+      "female_3": 0.657503,
+      "male_1": 0.427071,
+      "male_2": 0.443347
+    },
+    "lda-rich|fault_injected": {
+      "female_1": 0.370848,
+      "female_2": 0.228761,
+      "female_3": 0.42373,
+      "male_1": 0.328656,
+      "male_2": 0.306701
+    },
+    "rf-rich|clean": {
+      "female_1": 0.741457,
+      "female_2": 0.667383,
+      "female_3": 0.810472,
+      "male_1": 0.789567,
+      "male_2": 0.800783
+    },
+    "rf-rich|fault_injected": {
+      "female_1": 0.481577,
+      "female_2": 0.424542,
+      "female_3": 0.560519,
+      "male_1": 0.578322,
+      "male_2": 0.495609
+    }
+  },
+  "selected_model_by_cv": "rf-rich"
+}
