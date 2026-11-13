@@ -75,8 +75,9 @@ Implemented as a deterministic virtual scheduler in `limen/scheduler.py`.
 
 ## Evidence boundary
 
-All current results are from software simulation on a workstation with
-synthetic EMG/IMU data.
+All synthetic-data results are from software simulation on a workstation.
+One real-dataset evaluation (UCI sEMG Basic Hand Movements, Database 1)
+is included with honest limitations stated.
 
 | Claim | Evidence class | Value |
 |---|---|---|
@@ -85,12 +86,24 @@ synthetic EMG/IMU data.
 | Independent supervisor vetoes over-limit commands even at NOMINAL confidence | Software fault injection | Yes - test_supervisor_vetoes_beyond_hard_bounds |
 | Pipeline accuracy on clean synthetic data | Software simulation | 1.0000 (LDA, 4365 eval windows, seed 20260722) |
 | Pipeline accuracy under fault injection | Software simulation | 0.9883 (LDA), 0.9885 (temporal-LDA) |
-| Profile compiler generates deterministic artifacts | Unit test | 28 tests pass |
+| False activation rate, clean synthetic | Software simulation | 0.0000 |
+| End-to-end latency, clean synthetic | Workstation measurement | p95 0.82 ms |
+| Profile compiler generates deterministic artifacts | Unit test | Yes - test_profile_compiler.py |
 | Scheduler fires safety ticks continuously regardless of inference events | Unit test | Yes - test_scheduler.py |
 | C firmware reproduces Python pipeline outputs exactly | Host conformance | 30/30 golden vectors - limen_conformance.exe |
+| Python test suite | Unit test | 39 tests pass |
+| Real-dataset accuracy, within-subject | UCI sEMG DB1, trial-disjoint | 0.7797 clean (rf-rich) |
+| Real-dataset accuracy, cross-subject (LOSO) | UCI sEMG DB1, 5 folds | 0.23-0.28 across models |
+
+**Honest limitation:** cross-subject (leave-one-subject-out) accuracy on
+real sEMG data is near chance level for all evaluated models (6 classes,
+chance = 0.1667). The safety envelope mechanism is demonstrated; the
+underlying classifier does not yet generalize across subjects.
 
 **Not yet demonstrated:** embedded timing on MCU hardware, physical actuator
-trials, real biosignal datasets, power measurement on target silicon.
+trials, power measurement on target silicon.
+
+Full evidence trail: [EVIDENCE.md](EVIDENCE.md).
 
 ## Quick start
 
@@ -161,7 +174,10 @@ Limen/
 │   ├── test_safety_envelope.py
 │   ├── test_scheduler.py
 │   ├── test_profile_compiler.py
-│   └── test_capability_negotiation.py
+│   ├── test_capability_negotiation.py
+│   └── test_real_data_pipeline.py
+├── experiments/
+│   └── run_real_semg_benchmark.py  # UCI sEMG evaluation runner
 └── examples/
     └── controller_v0.json
 ```

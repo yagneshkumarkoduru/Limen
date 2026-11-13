@@ -134,11 +134,50 @@ and the C firmware implementation.
 
 ---
 
-## 7. What is NOT yet demonstrated
+## 7. Real-Dataset Results (UCI sEMG Basic Hand Movements, Database 1)
+
+Run date: 2026-11-14
+Dataset: UCI sEMG for Basic Hand Movements, Database 1 (5 subjects, 6
+gestures, 30 trials each; CC BY 4.0, DOI 10.24432/C5TK53). Dataset files
+are not redistributed in this repository; download from the UCI ML
+Repository and place under data/.
+
+Pipeline: src/limen/datasets_real.py
+Runner: experiments/run_real_semg_benchmark.py
+Full reports: results/real_semg_summary.json, results/real_semg_loso.json,
+results/real_semg_within_subject.json
+
+### Leave-one-subject-out (5 folds, accuracy mean +/- std)
+
+| Model | Clean | Fault-injected |
+|---|---|---|
+| lda-time | 0.2752 +/- 0.0845 | 0.2379 +/- 0.0384 |
+| lda-rich | 0.2815 +/- 0.0881 | 0.2280 +/- 0.0373 |
+| rf-rich | 0.2644 +/- 0.0986 | 0.2346 +/- 0.0440 |
+
+### Within-subject, trial-disjoint (selected by train-only CV: rf-rich)
+
+| Model | Clean | Fault-injected |
+|---|---|---|
+| rf-rich | 0.7797 | 0.5037 |
+
+### Interpretation limits
+
+- Cross-subject generalization (LOSO) is near chance level for all models
+  (6 classes; chance = 0.1667). This is the honest headline: the safety
+  envelope mechanism works, but the underlying classifier does not
+  generalize across subjects on this dataset.
+- Within-subject performance is substantially higher, consistent with
+  published sEMG literature on small subject pools.
+- These results measure classification accuracy only; they are not timing,
+  power, or hardware results.
+
+---
+
+## 8. What is NOT yet demonstrated
 
 - Embedded timing on any MCU hardware (Cortex-M class or otherwise)
 - Physical actuator trials (real motor or joint)
-- Real biosignal datasets (NinaPro or equivalent)
 - Power measurement on target silicon
 - RTL synthesis, timing closure, or FPGA floorplan
 - Any human participant involvement

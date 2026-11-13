@@ -11,3 +11,6 @@ out/
 firmware/build-host/
 firmware/build-arm/
 .pytest_cache/
+similarity_audit.py
+data/
+results/_before_summary_snapshot.json

@@ -1,0 +1,3254 @@
+{
+  "report": "Limen EMG/IMU Safety Benchmark",
+  "generated_utc": "2026-10-12T15:55:00+00:00",
+  "dataset": {
+    "source": "uci-semg-basic-hand-movements-db1",
+    "license": "CC BY 4.0 (DOI 10.24432/C5TK53)",
+    "kind": "real",
+    "protocol": "leave-one-subject-out (all trials of the held-out subject)"
+  },
+  "configuration": {
+    "seed": 20260722,
+    "intent_classes": [
+      "cyl",
+      "hook",
+      "tip",
+      "palm",
+      "spher",
+      "lat"
+    ],
+    "emg_sample_rate_hz": 1000,
+    "imu_sample_rate_hz": 100,
+    "n_emg_channels": 2,
+    "window_ms": 200,
+    "stride_ms": 20,
+    "bandpass_hz": [
+      20.0,
+      450.0
+    ],
+    "notch_hz": 50.0,
+    "safety": {
+      "t_high": 0.75,
+      "t_low": 0.45,
+      "degraded_velocity_scale": 0.5,
+      "degraded_force_scale": 0.4,
+      "hard_max_torque_nm": 40.0,
+      "hard_max_velocity_rad_s": 6.0,
+      "persistence_windows": 3
+    }
+  },
+  "environment": {
+    "python": "3.11.15",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "scikit_learn": "1.6.1",
+    "os": "Windows-10-10.0.26200-SP0",
+    "hardware": "AMD64 (development workstation; no embedded target yet)"
+  },
+  "runs": [
+    {
+      "model": "lda-time|held_out=female_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.381195,
+      "accuracy_on_accepted": 0.379714,
+      "false_activation_rate": null,
+      "rejection_rate": 0.796354,
+      "envelope_events": {
+        "nominal": 10667,
+        "degraded": 12324,
+        "safe_halt": 29389
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            266,
+            6385,
+            59,
+            1779,
+            11,
+            230
+          ],
+          [
+            86,
+            8206,
+            81,
+            229,
+            0,
+            128
+          ],
+          [
+            114,
+            902,
+            2560,
+            2634,
+            0,
+            2520
+          ],
+          [
+            287,
+            595,
+            959,
+            4424,
+            0,
+            2465
+          ],
+          [
+            47,
+            8063,
+            104,
+            449,
+            0,
+            67
+          ],
+          [
+            2210,
+            93,
+            885,
+            1031,
+            0,
+            4511
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.149,
+          "p95_ms": 0.2146,
+          "p99_ms": 0.3327,
+          "max_ms": 5.5414,
+          "mean_ms": 0.1491
+        },
+        "inference": {
+          "p50_ms": 0.2528,
+          "p95_ms": 0.3889,
+          "p99_ms": 0.5682,
+          "max_ms": 6.3065,
+          "mean_ms": 0.2593
+        },
+        "decision_loop": {
+          "p50_ms": 0.1728,
+          "p95_ms": 0.264,
+          "p99_ms": 0.4019,
+          "max_ms": 5.3838,
+          "mean_ms": 0.177
+        },
+        "end_to_end": {
+          "p50_ms": 0.5817,
+          "p95_ms": 0.8471,
+          "p99_ms": 1.1524,
+          "max_ms": 8.1978,
+          "mean_ms": 0.5854
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=female_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.284498,
+      "accuracy_on_accepted": 0.245498,
+      "false_activation_rate": null,
+      "rejection_rate": 0.867392,
+      "envelope_events": {
+        "nominal": 6946,
+        "degraded": 14598,
+        "safe_halt": 30836
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            3866,
+            3881,
+            13,
+            816,
+            11,
+            143
+          ],
+          [
+            2714,
+            5539,
+            81,
+            256,
+            0,
+            140
+          ],
+          [
+            4436,
+            517,
+            1159,
+            1280,
+            0,
+            1338
+          ],
+          [
+            4535,
+            367,
+            456,
+            2161,
+            0,
+            1211
+          ],
+          [
+            2147,
+            5952,
+            104,
+            458,
+            0,
+            69
+          ],
+          [
+            5511,
+            43,
+            448,
+            551,
+            0,
+            2177
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1505,
+          "p95_ms": 0.2205,
+          "p99_ms": 0.3433,
+          "max_ms": 3.3666,
+          "mean_ms": 0.1517
+        },
+        "inference": {
+          "p50_ms": 0.2615,
+          "p95_ms": 0.4172,
+          "p99_ms": 0.6072,
+          "max_ms": 4.7389,
+          "mean_ms": 0.2708
+        },
+        "decision_loop": {
+          "p50_ms": 0.1778,
+          "p95_ms": 0.2749,
+          "p99_ms": 0.4175,
+          "max_ms": 11.3857,
+          "mean_ms": 0.1833
+        },
+        "end_to_end": {
+          "p50_ms": 0.5954,
+          "p95_ms": 0.8936,
+          "p99_ms": 1.2255,
+          "max_ms": 11.8435,
+          "mean_ms": 0.6058
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.392325,
+      "accuracy_on_accepted": 0.348252,
+      "false_activation_rate": null,
+      "rejection_rate": 0.705556,
+      "envelope_events": {
+        "nominal": 15423,
+        "degraded": 10294,
+        "safe_halt": 26663
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            242,
+            7488,
+            5,
+            926,
+            11,
+            58
+          ],
+          [
+            62,
+            8301,
+            139,
+            143,
+            0,
+            85
+          ],
+          [
+            84,
+            1271,
+            1461,
+            3969,
+            0,
+            1945
+          ],
+          [
+            124,
+            413,
+            823,
+            5076,
+            0,
+            2294
+          ],
+          [
+            43,
+            8255,
+            107,
+            272,
+            0,
+            53
+          ],
+          [
+            444,
+            14,
+            2018,
+            784,
+            0,
+            5470
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4059,
+          "p95_ms": 0.6145,
+          "p99_ms": 0.9101,
+          "max_ms": 5.2984,
+          "mean_ms": 0.4152
+        },
+        "inference": {
+          "p50_ms": 0.2744,
+          "p95_ms": 0.4571,
+          "p99_ms": 0.6825,
+          "max_ms": 713.6313,
+          "mean_ms": 0.3054
+        },
+        "decision_loop": {
+          "p50_ms": 0.1801,
+          "p95_ms": 0.2954,
+          "p99_ms": 0.4544,
+          "max_ms": 15.2879,
+          "mean_ms": 0.1914
+        },
+        "end_to_end": {
+          "p50_ms": 0.8701,
+          "p95_ms": 1.3308,
+          "p99_ms": 1.8589,
+          "max_ms": 714.234,
+          "mean_ms": 0.912
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.267087,
+      "accuracy_on_accepted": 0.297207,
+      "false_activation_rate": null,
+      "rejection_rate": 0.836922,
+      "envelope_events": {
+        "nominal": 8542,
+        "degraded": 12615,
+        "safe_halt": 31223
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            817,
+            3827,
+            1167,
+            417,
+            11,
+            2491
+          ],
+          [
+            730,
+            4041,
+            1259,
+            182,
+            0,
+            2518
+          ],
+          [
+            667,
+            773,
+            1633,
+            1930,
+            0,
+            3727
+          ],
+          [
+            687,
+            272,
+            1629,
+            2525,
+            0,
+            3617
+          ],
+          [
+            628,
+            4044,
+            1290,
+            444,
+            0,
+            2324
+          ],
+          [
+            803,
+            11,
+            2477,
+            465,
+            0,
+            4974
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2895,
+          "p95_ms": 0.5623,
+          "p99_ms": 0.8064,
+          "max_ms": 6.7748,
+          "mean_ms": 0.3443
+        },
+        "inference": {
+          "p50_ms": 0.2118,
+          "p95_ms": 0.4084,
+          "p99_ms": 0.6035,
+          "max_ms": 15.1726,
+          "mean_ms": 0.2436
+        },
+        "decision_loop": {
+          "p50_ms": 0.1378,
+          "p95_ms": 0.2674,
+          "p99_ms": 0.4231,
+          "max_ms": 4.3764,
+          "mean_ms": 0.1615
+        },
+        "end_to_end": {
+          "p50_ms": 0.655,
+          "p95_ms": 1.2072,
+          "p99_ms": 1.673,
+          "max_ms": 16.3982,
+          "mean_ms": 0.7493
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.288851,
+      "accuracy_on_accepted": 0.277109,
+      "false_activation_rate": null,
+      "rejection_rate": 0.634765,
+      "envelope_events": {
+        "nominal": 19131,
+        "degraded": 23336,
+        "safe_halt": 9913
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            58,
+            8368,
+            42,
+            98,
+            0,
+            164
+          ],
+          [
+            591,
+            6313,
+            101,
+            1342,
+            270,
+            113
+          ],
+          [
+            4873,
+            1157,
+            739,
+            1167,
+            34,
+            760
+          ],
+          [
+            873,
+            802,
+            987,
+            4281,
+            38,
+            1749
+          ],
+          [
+            91,
+            8438,
+            62,
+            29,
+            32,
+            78
+          ],
+          [
+            1943,
+            59,
+            1247,
+            1694,
+            80,
+            3707
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4998,
+          "p95_ms": 0.7627,
+          "p99_ms": 1.0549,
+          "max_ms": 14.269,
+          "mean_ms": 0.5149
+        },
+        "inference": {
+          "p50_ms": 19.9965,
+          "p95_ms": 28.3288,
+          "p99_ms": 42.2736,
+          "max_ms": 376.7422,
+          "mean_ms": 20.5191
+        },
+        "decision_loop": {
+          "p50_ms": 0.3129,
+          "p95_ms": 0.5027,
+          "p99_ms": 0.6978,
+          "max_ms": 8.3841,
+          "mean_ms": 0.3319
+        },
+        "end_to_end": {
+          "p50_ms": 20.8568,
+          "p95_ms": 29.2659,
+          "p99_ms": 43.2778,
+          "max_ms": 377.3208,
+          "mean_ms": 21.3659
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.227701,
+      "accuracy_on_accepted": 0.218126,
+      "false_activation_rate": null,
+      "rejection_rate": 0.815292,
+      "envelope_events": {
+        "nominal": 9675,
+        "degraded": 19134,
+        "safe_halt": 23571
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            81,
+            8245,
+            43,
+            126,
+            0,
+            235
+          ],
+          [
+            352,
+            7264,
+            88,
+            468,
+            191,
+            367
+          ],
+          [
+            6275,
+            745,
+            400,
+            563,
+            50,
+            697
+          ],
+          [
+            4645,
+            547,
+            476,
+            1945,
+            39,
+            1078
+          ],
+          [
+            91,
+            8371,
+            62,
+            28,
+            32,
+            146
+          ],
+          [
+            4945,
+            61,
+            604,
+            810,
+            105,
+            2205
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4012,
+          "p95_ms": 0.7012,
+          "p99_ms": 0.9925,
+          "max_ms": 11.091,
+          "mean_ms": 0.4519
+        },
+        "inference": {
+          "p50_ms": 16.0656,
+          "p95_ms": 24.8376,
+          "p99_ms": 35.1499,
+          "max_ms": 279.9051,
+          "mean_ms": 17.337
+        },
+        "decision_loop": {
+          "p50_ms": 0.2661,
+          "p95_ms": 0.4507,
+          "p99_ms": 0.6706,
+          "max_ms": 36.9401,
+          "mean_ms": 0.2927
+        },
+        "end_to_end": {
+          "p50_ms": 16.8107,
+          "p95_ms": 25.7055,
+          "p99_ms": 36.0635,
+          "max_ms": 313.7518,
+          "mean_ms": 18.0817
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=female_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.176766,
+      "accuracy_on_accepted": 0.205982,
+      "false_activation_rate": null,
+      "rejection_rate": 0.746831,
+      "envelope_events": {
+        "nominal": 13261,
+        "degraded": 23150,
+        "safe_halt": 15969
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            500,
+            2893,
+            287,
+            51,
+            4806,
+            193
+          ],
+          [
+            2066,
+            406,
+            385,
+            273,
+            5555,
+            45
+          ],
+          [
+            4248,
+            256,
+            791,
+            1140,
+            1258,
+            1037
+          ],
+          [
+            3658,
+            852,
+            177,
+            772,
+            2855,
+            416
+          ],
+          [
+            368,
+            2070,
+            101,
+            81,
+            5971,
+            139
+          ],
+          [
+            4003,
+            40,
+            1381,
+            2426,
+            61,
+            819
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1559,
+          "p95_ms": 0.2161,
+          "p99_ms": 0.3413,
+          "max_ms": 14.3813,
+          "mean_ms": 0.1496
+        },
+        "inference": {
+          "p50_ms": 0.264,
+          "p95_ms": 0.3983,
+          "p99_ms": 0.5794,
+          "max_ms": 2560.1944,
+          "mean_ms": 0.3114
+        },
+        "decision_loop": {
+          "p50_ms": 0.1817,
+          "p95_ms": 0.2661,
+          "p99_ms": 0.4047,
+          "max_ms": 12.0893,
+          "mean_ms": 0.1784
+        },
+        "end_to_end": {
+          "p50_ms": 0.6085,
+          "p95_ms": 0.8591,
+          "p99_ms": 1.1632,
+          "max_ms": 2560.5746,
+          "mean_ms": 0.6395
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=female_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.185911,
+      "accuracy_on_accepted": 0.201465,
+      "false_activation_rate": null,
+      "rejection_rate": 0.804124,
+      "envelope_events": {
+        "nominal": 10260,
+        "degraded": 29608,
+        "safe_halt": 12512
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4741,
+            1077,
+            287,
+            50,
+            2382,
+            193
+          ],
+          [
+            4655,
+            310,
+            385,
+            121,
+            3214,
+            45
+          ],
+          [
+            5661,
+            204,
+            719,
+            519,
+            742,
+            885
+          ],
+          [
+            5356,
+            599,
+            172,
+            343,
+            1961,
+            299
+          ],
+          [
+            4320,
+            1368,
+            101,
+            81,
+            2721,
+            139
+          ],
+          [
+            5636,
+            25,
+            1012,
+            1127,
+            26,
+            904
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1559,
+          "p95_ms": 0.2267,
+          "p99_ms": 0.3671,
+          "max_ms": 15.8356,
+          "mean_ms": 0.1521
+        },
+        "inference": {
+          "p50_ms": 0.268,
+          "p95_ms": 0.4198,
+          "p99_ms": 0.6164,
+          "max_ms": 7.6629,
+          "mean_ms": 0.2706
+        },
+        "decision_loop": {
+          "p50_ms": 0.1839,
+          "p95_ms": 0.2814,
+          "p99_ms": 0.4354,
+          "max_ms": 15.1765,
+          "mean_ms": 0.1839
+        },
+        "end_to_end": {
+          "p50_ms": 0.6155,
+          "p95_ms": 0.9015,
+          "p99_ms": 1.2309,
+          "max_ms": 16.6534,
+          "mean_ms": 0.6066
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.151642,
+      "accuracy_on_accepted": 0.163086,
+      "false_activation_rate": null,
+      "rejection_rate": 0.71323,
+      "envelope_events": {
+        "nominal": 15021,
+        "degraded": 32365,
+        "safe_halt": 4994
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            536,
+            2952,
+            263,
+            43,
+            4758,
+            178
+          ],
+          [
+            2215,
+            461,
+            264,
+            218,
+            5560,
+            12
+          ],
+          [
+            5917,
+            412,
+            650,
+            361,
+            1327,
+            63
+          ],
+          [
+            4072,
+            1021,
+            234,
+            95,
+            2880,
+            428
+          ],
+          [
+            313,
+            1885,
+            110,
+            41,
+            6159,
+            222
+          ],
+          [
+            6539,
+            93,
+            715,
+            1231,
+            110,
+            42
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2704,
+          "p95_ms": 0.521,
+          "p99_ms": 0.7347,
+          "max_ms": 8.4276,
+          "mean_ms": 0.3187
+        },
+        "inference": {
+          "p50_ms": 0.1911,
+          "p95_ms": 0.3716,
+          "p99_ms": 0.5369,
+          "max_ms": 5.9603,
+          "mean_ms": 0.2223
+        },
+        "decision_loop": {
+          "p50_ms": 0.127,
+          "p95_ms": 0.247,
+          "p99_ms": 0.383,
+          "max_ms": 4.0661,
+          "mean_ms": 0.1495
+        },
+        "end_to_end": {
+          "p50_ms": 0.5981,
+          "p95_ms": 1.1024,
+          "p99_ms": 1.4474,
+          "max_ms": 9.5707,
+          "mean_ms": 0.6905
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.179801,
+      "accuracy_on_accepted": 0.182754,
+      "false_activation_rate": null,
+      "rejection_rate": 0.79412,
+      "envelope_events": {
+        "nominal": 10784,
+        "degraded": 28542,
+        "safe_halt": 13054
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1189,
+            1060,
+            370,
+            2698,
+            2401,
+            1012
+          ],
+          [
+            1085,
+            343,
+            313,
+            3283,
+            3228,
+            478
+          ],
+          [
+            2938,
+            295,
+            944,
+            2891,
+            771,
+            891
+          ],
+          [
+            1609,
+            664,
+            435,
+            3120,
+            1962,
+            940
+          ],
+          [
+            1100,
+            932,
+            312,
+            1667,
+            2827,
+            1892
+          ],
+          [
+            3304,
+            50,
+            1252,
+            3081,
+            48,
+            995
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2784,
+          "p95_ms": 0.532,
+          "p99_ms": 0.7392,
+          "max_ms": 7.2865,
+          "mean_ms": 0.3287
+        },
+        "inference": {
+          "p50_ms": 0.1985,
+          "p95_ms": 0.3757,
+          "p99_ms": 0.5353,
+          "max_ms": 4.0324,
+          "mean_ms": 0.2283
+        },
+        "decision_loop": {
+          "p50_ms": 0.1315,
+          "p95_ms": 0.2515,
+          "p99_ms": 0.3917,
+          "max_ms": 3.1086,
+          "mean_ms": 0.1541
+        },
+        "end_to_end": {
+          "p50_ms": 0.6198,
+          "p95_ms": 1.1251,
+          "p99_ms": 1.4628,
+          "max_ms": 9.2532,
+          "mean_ms": 0.7111
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.246621,
+      "accuracy_on_accepted": 0.253819,
+      "false_activation_rate": null,
+      "rejection_rate": 0.752883,
+      "envelope_events": {
+        "nominal": 12944,
+        "degraded": 35169,
+        "safe_halt": 4267
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            363,
+            3803,
+            310,
+            45,
+            4176,
+            33
+          ],
+          [
+            1654,
+            4508,
+            280,
+            1187,
+            1062,
+            39
+          ],
+          [
+            1181,
+            1736,
+            619,
+            3755,
+            1353,
+            86
+          ],
+          [
+            1095,
+            4140,
+            161,
+            2322,
+            866,
+            146
+          ],
+          [
+            224,
+            3119,
+            74,
+            47,
+            5032,
+            234
+          ],
+          [
+            2286,
+            1246,
+            961,
+            4017,
+            146,
+            74
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.41,
+          "p95_ms": 0.7173,
+          "p99_ms": 0.9952,
+          "max_ms": 16.3669,
+          "mean_ms": 0.461
+        },
+        "inference": {
+          "p50_ms": 17.1146,
+          "p95_ms": 26.5843,
+          "p99_ms": 42.3666,
+          "max_ms": 405.311,
+          "mean_ms": 18.4646
+        },
+        "decision_loop": {
+          "p50_ms": 0.2733,
+          "p95_ms": 0.4636,
+          "p99_ms": 0.6741,
+          "max_ms": 3.3102,
+          "mean_ms": 0.2988
+        },
+        "end_to_end": {
+          "p50_ms": 17.8644,
+          "p95_ms": 27.4698,
+          "p99_ms": 43.1048,
+          "max_ms": 406.036,
+          "mean_ms": 19.2244
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.27205,
+      "accuracy_on_accepted": 0.252055,
+      "false_activation_rate": null,
+      "rejection_rate": 0.883658,
+      "envelope_events": {
+        "nominal": 6094,
+        "degraded": 23110,
+        "safe_halt": 23176
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4630,
+            1531,
+            313,
+            17,
+            2193,
+            46
+          ],
+          [
+            4659,
+            2689,
+            292,
+            225,
+            824,
+            41
+          ],
+          [
+            2705,
+            873,
+            752,
+            2093,
+            890,
+            1417
+          ],
+          [
+            4019,
+            2414,
+            186,
+            813,
+            471,
+            827
+          ],
+          [
+            4444,
+            1615,
+            74,
+            47,
+            2316,
+            234
+          ],
+          [
+            1722,
+            675,
+            840,
+            2395,
+            48,
+            3050
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4818,
+          "p95_ms": 0.7296,
+          "p99_ms": 1.0043,
+          "max_ms": 15.4,
+          "mean_ms": 0.4964
+        },
+        "inference": {
+          "p50_ms": 19.2936,
+          "p95_ms": 32.3754,
+          "p99_ms": 59.5174,
+          "max_ms": 4681.5996,
+          "mean_ms": 20.8333
+        },
+        "decision_loop": {
+          "p50_ms": 0.2976,
+          "p95_ms": 0.4675,
+          "p99_ms": 0.6785,
+          "max_ms": 8.2924,
+          "mean_ms": 0.315
+        },
+        "end_to_end": {
+          "p50_ms": 20.1167,
+          "p95_ms": 33.2764,
+          "p99_ms": 60.4498,
+          "max_ms": 4682.5628,
+          "mean_ms": 21.6446
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=female_3",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.363039,
+      "accuracy_on_accepted": 0.49166,
+      "false_activation_rate": null,
+      "rejection_rate": 0.940645,
+      "envelope_events": {
+        "nominal": 3109,
+        "degraded": 19313,
+        "safe_halt": 29958
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4866,
+            0,
+            7,
+            169,
+            178,
+            3510
+          ],
+          [
+            4176,
+            1048,
+            49,
+            1144,
+            1757,
+            556
+          ],
+          [
+            784,
+            0,
+            574,
+            2997,
+            0,
+            4375
+          ],
+          [
+            3085,
+            10,
+            147,
+            1068,
+            15,
+            4405
+          ],
+          [
+            2603,
+            8,
+            36,
+            134,
+            5639,
+            310
+          ],
+          [
+            1885,
+            0,
+            388,
+            636,
+            0,
+            5821
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1478,
+          "p95_ms": 0.2221,
+          "p99_ms": 0.3551,
+          "max_ms": 4.6897,
+          "mean_ms": 0.1486
+        },
+        "inference": {
+          "p50_ms": 0.252,
+          "p95_ms": 0.4035,
+          "p99_ms": 0.6125,
+          "max_ms": 6.0317,
+          "mean_ms": 0.2605
+        },
+        "decision_loop": {
+          "p50_ms": 0.1708,
+          "p95_ms": 0.2716,
+          "p99_ms": 0.4276,
+          "max_ms": 3.1422,
+          "mean_ms": 0.1768
+        },
+        "end_to_end": {
+          "p50_ms": 0.5784,
+          "p95_ms": 0.8767,
+          "p99_ms": 1.2515,
+          "max_ms": 7.7883,
+          "mean_ms": 0.586
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=female_3",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.278828,
+      "accuracy_on_accepted": 0.292589,
+      "false_activation_rate": null,
+      "rejection_rate": 0.943891,
+      "envelope_events": {
+        "nominal": 2939,
+        "degraded": 30808,
+        "safe_halt": 18633
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            2649,
+            0,
+            7,
+            97,
+            147,
+            5830
+          ],
+          [
+            2141,
+            565,
+            30,
+            757,
+            1035,
+            4202
+          ],
+          [
+            463,
+            0,
+            279,
+            1385,
+            0,
+            6603
+          ],
+          [
+            1635,
+            9,
+            100,
+            519,
+            7,
+            6460
+          ],
+          [
+            1048,
+            12,
+            36,
+            101,
+            3313,
+            4220
+          ],
+          [
+            969,
+            0,
+            163,
+            318,
+            0,
+            7280
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1478,
+          "p95_ms": 0.2092,
+          "p99_ms": 0.3196,
+          "max_ms": 5.6244,
+          "mean_ms": 0.1486
+        },
+        "inference": {
+          "p50_ms": 0.2509,
+          "p95_ms": 0.3816,
+          "p99_ms": 0.5504,
+          "max_ms": 4.1105,
+          "mean_ms": 0.2581
+        },
+        "decision_loop": {
+          "p50_ms": 0.1712,
+          "p95_ms": 0.2578,
+          "p99_ms": 0.3884,
+          "max_ms": 4.9911,
+          "mean_ms": 0.1769
+        },
+        "end_to_end": {
+          "p50_ms": 0.5773,
+          "p95_ms": 0.8319,
+          "p99_ms": 1.1412,
+          "max_ms": 6.3975,
+          "mean_ms": 0.5836
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_3",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.361283,
+      "accuracy_on_accepted": 0.390135,
+      "false_activation_rate": null,
+      "rejection_rate": 0.784364,
+      "envelope_events": {
+        "nominal": 11295,
+        "degraded": 30957,
+        "safe_halt": 10128
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1990,
+            0,
+            0,
+            0,
+            685,
+            6055
+          ],
+          [
+            3663,
+            1834,
+            5,
+            373,
+            2514,
+            341
+          ],
+          [
+            0,
+            0,
+            120,
+            26,
+            0,
+            8584
+          ],
+          [
+            442,
+            0,
+            12,
+            5,
+            213,
+            8058
+          ],
+          [
+            1943,
+            24,
+            8,
+            2,
+            6270,
+            483
+          ],
+          [
+            12,
+            0,
+            12,
+            1,
+            0,
+            8705
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4101,
+          "p95_ms": 0.6145,
+          "p99_ms": 0.9073,
+          "max_ms": 8.4154,
+          "mean_ms": 0.4217
+        },
+        "inference": {
+          "p50_ms": 0.2807,
+          "p95_ms": 0.4429,
+          "p99_ms": 0.6451,
+          "max_ms": 7.4659,
+          "mean_ms": 0.2959
+        },
+        "decision_loop": {
+          "p50_ms": 0.1839,
+          "p95_ms": 0.291,
+          "p99_ms": 0.4528,
+          "max_ms": 5.0004,
+          "mean_ms": 0.1945
+        },
+        "end_to_end": {
+          "p50_ms": 0.8831,
+          "p95_ms": 1.2972,
+          "p99_ms": 1.8061,
+          "max_ms": 10.1192,
+          "mean_ms": 0.9121
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=female_3",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.276174,
+      "accuracy_on_accepted": 0.283677,
+      "false_activation_rate": null,
+      "rejection_rate": 0.856472,
+      "envelope_events": {
+        "nominal": 7518,
+        "degraded": 37015,
+        "safe_halt": 7847
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1306,
+            0,
+            0,
+            0,
+            444,
+            6980
+          ],
+          [
+            1543,
+            818,
+            5,
+            334,
+            1447,
+            4583
+          ],
+          [
+            0,
+            0,
+            58,
+            11,
+            0,
+            8661
+          ],
+          [
+            333,
+            0,
+            13,
+            5,
+            152,
+            8227
+          ],
+          [
+            459,
+            15,
+            8,
+            2,
+            3566,
+            4680
+          ],
+          [
+            12,
+            0,
+            4,
+            1,
+            0,
+            8713
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4129,
+          "p95_ms": 0.5972,
+          "p99_ms": 0.8835,
+          "max_ms": 26.4566,
+          "mean_ms": 0.4246
+        },
+        "inference": {
+          "p50_ms": 0.2866,
+          "p95_ms": 0.4331,
+          "p99_ms": 0.622,
+          "max_ms": 4.5375,
+          "mean_ms": 0.2986
+        },
+        "decision_loop": {
+          "p50_ms": 0.1871,
+          "p95_ms": 0.2881,
+          "p99_ms": 0.4444,
+          "max_ms": 5.5536,
+          "mean_ms": 0.197
+        },
+        "end_to_end": {
+          "p50_ms": 0.893,
+          "p95_ms": 1.2826,
+          "p99_ms": 1.7936,
+          "max_ms": 27.1785,
+          "mean_ms": 0.9202
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_3",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.440111,
+      "accuracy_on_accepted": 0.489979,
+      "false_activation_rate": null,
+      "rejection_rate": 0.791447,
+      "envelope_events": {
+        "nominal": 10924,
+        "degraded": 30937,
+        "safe_halt": 10519
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            6964,
+            145,
+            21,
+            55,
+            940,
+            605
+          ],
+          [
+            2137,
+            2613,
+            584,
+            801,
+            1212,
+            1383
+          ],
+          [
+            81,
+            240,
+            1516,
+            2347,
+            1085,
+            3461
+          ],
+          [
+            1576,
+            28,
+            1620,
+            768,
+            175,
+            4563
+          ],
+          [
+            2808,
+            1283,
+            328,
+            100,
+            4026,
+            185
+          ],
+          [
+            38,
+            277,
+            319,
+            444,
+            486,
+            7166
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4349,
+          "p95_ms": 0.7378,
+          "p99_ms": 1.0142,
+          "max_ms": 56.8466,
+          "mean_ms": 0.4809
+        },
+        "inference": {
+          "p50_ms": 17.7803,
+          "p95_ms": 28.5802,
+          "p99_ms": 47.5982,
+          "max_ms": 419.9364,
+          "mean_ms": 19.2823
+        },
+        "decision_loop": {
+          "p50_ms": 0.2934,
+          "p95_ms": 0.4807,
+          "p99_ms": 0.6964,
+          "max_ms": 8.4815,
+          "mean_ms": 0.3117
+        },
+        "end_to_end": {
+          "p50_ms": 18.5701,
+          "p95_ms": 29.4937,
+          "p99_ms": 48.5171,
+          "max_ms": 421.1764,
+          "mean_ms": 20.075
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=female_3",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.296239,
+      "accuracy_on_accepted": 0.339209,
+      "false_activation_rate": null,
+      "rejection_rate": 0.882207,
+      "envelope_events": {
+        "nominal": 6170,
+        "degraded": 26789,
+        "safe_halt": 19421
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            3483,
+            129,
+            7,
+            22,
+            570,
+            4519
+          ],
+          [
+            3194,
+            1390,
+            186,
+            521,
+            646,
+            2793
+          ],
+          [
+            194,
+            136,
+            821,
+            1114,
+            810,
+            5655
+          ],
+          [
+            1235,
+            24,
+            1072,
+            287,
+            196,
+            5916
+          ],
+          [
+            2055,
+            738,
+            124,
+            69,
+            1968,
+            3776
+          ],
+          [
+            225,
+            145,
+            223,
+            265,
+            304,
+            7568
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.4036,
+          "p95_ms": 0.687,
+          "p99_ms": 0.9782,
+          "max_ms": 6.695,
+          "mean_ms": 0.449
+        },
+        "inference": {
+          "p50_ms": 15.9628,
+          "p95_ms": 25.379,
+          "p99_ms": 37.6961,
+          "max_ms": 3494.5912,
+          "mean_ms": 17.4187
+        },
+        "decision_loop": {
+          "p50_ms": 0.2717,
+          "p95_ms": 0.4408,
+          "p99_ms": 0.6387,
+          "max_ms": 6.8301,
+          "mean_ms": 0.2933
+        },
+        "end_to_end": {
+          "p50_ms": 16.7049,
+          "p95_ms": 26.2771,
+          "p99_ms": 38.5169,
+          "max_ms": 3495.6379,
+          "mean_ms": 18.161
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=male_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.192325,
+      "accuracy_on_accepted": 0.199208,
+      "false_activation_rate": null,
+      "rejection_rate": 0.686522,
+      "envelope_events": {
+        "nominal": 16420,
+        "degraded": 19693,
+        "safe_halt": 16267
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1716,
+            5,
+            2131,
+            534,
+            0,
+            4344
+          ],
+          [
+            575,
+            998,
+            236,
+            36,
+            6848,
+            37
+          ],
+          [
+            64,
+            1,
+            6608,
+            571,
+            0,
+            1486
+          ],
+          [
+            16,
+            2,
+            8575,
+            38,
+            0,
+            99
+          ],
+          [
+            5729,
+            645,
+            256,
+            920,
+            357,
+            823
+          ],
+          [
+            25,
+            0,
+            8186,
+            162,
+            0,
+            357
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1032,
+          "p95_ms": 0.2032,
+          "p99_ms": 0.336,
+          "max_ms": 4.1948,
+          "mean_ms": 0.126
+        },
+        "inference": {
+          "p50_ms": 0.1851,
+          "p95_ms": 0.3793,
+          "p99_ms": 0.5778,
+          "max_ms": 6.5518,
+          "mean_ms": 0.2233
+        },
+        "decision_loop": {
+          "p50_ms": 0.1253,
+          "p95_ms": 0.2515,
+          "p99_ms": 0.4131,
+          "max_ms": 12.3202,
+          "mean_ms": 0.1522
+        },
+        "end_to_end": {
+          "p50_ms": 0.4201,
+          "p95_ms": 0.8292,
+          "p99_ms": 1.2037,
+          "max_ms": 13.0938,
+          "mean_ms": 0.5015
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=male_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.229591,
+      "accuracy_on_accepted": 0.194153,
+      "false_activation_rate": null,
+      "rejection_rate": 0.821019,
+      "envelope_events": {
+        "nominal": 9375,
+        "degraded": 22332,
+        "safe_halt": 20673
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4632,
+            4,
+            1188,
+            172,
+            0,
+            2734
+          ],
+          [
+            4611,
+            257,
+            235,
+            36,
+            3553,
+            38
+          ],
+          [
+            1184,
+            1,
+            3086,
+            332,
+            0,
+            4127
+          ],
+          [
+            460,
+            2,
+            4180,
+            36,
+            0,
+            4052
+          ],
+          [
+            6975,
+            307,
+            169,
+            559,
+            339,
+            381
+          ],
+          [
+            925,
+            0,
+            4038,
+            91,
+            0,
+            3676
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1027,
+          "p95_ms": 0.2001,
+          "p99_ms": 0.3368,
+          "max_ms": 6.0017,
+          "mean_ms": 0.1251
+        },
+        "inference": {
+          "p50_ms": 0.1835,
+          "p95_ms": 0.3703,
+          "p99_ms": 0.5627,
+          "max_ms": 7.5099,
+          "mean_ms": 0.2202
+        },
+        "decision_loop": {
+          "p50_ms": 0.1249,
+          "p95_ms": 0.2467,
+          "p99_ms": 0.4038,
+          "max_ms": 9.8989,
+          "mean_ms": 0.1507
+        },
+        "end_to_end": {
+          "p50_ms": 0.4175,
+          "p95_ms": 0.8141,
+          "p99_ms": 1.154,
+          "max_ms": 10.2813,
+          "mean_ms": 0.4961
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=male_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.22396,
+      "accuracy_on_accepted": 0.22153,
+      "false_activation_rate": null,
+      "rejection_rate": 0.6416,
+      "envelope_events": {
+        "nominal": 18773,
+        "degraded": 21348,
+        "safe_halt": 12259
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            3242,
+            50,
+            1755,
+            969,
+            0,
+            2714
+          ],
+          [
+            539,
+            964,
+            300,
+            40,
+            6831,
+            56
+          ],
+          [
+            11,
+            0,
+            6874,
+            226,
+            0,
+            1619
+          ],
+          [
+            1,
+            0,
+            8624,
+            6,
+            0,
+            99
+          ],
+          [
+            6020,
+            685,
+            199,
+            1001,
+            275,
+            550
+          ],
+          [
+            0,
+            0,
+            8284,
+            76,
+            0,
+            370
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2706,
+          "p95_ms": 0.5075,
+          "p99_ms": 0.7114,
+          "max_ms": 11.5673,
+          "mean_ms": 0.3183
+        },
+        "inference": {
+          "p50_ms": 0.1902,
+          "p95_ms": 0.3583,
+          "p99_ms": 0.5112,
+          "max_ms": 4.4511,
+          "mean_ms": 0.2194
+        },
+        "decision_loop": {
+          "p50_ms": 0.1259,
+          "p95_ms": 0.2355,
+          "p99_ms": 0.3665,
+          "max_ms": 9.5661,
+          "mean_ms": 0.1472
+        },
+        "end_to_end": {
+          "p50_ms": 0.5954,
+          "p95_ms": 1.0707,
+          "p99_ms": 1.418,
+          "max_ms": 12.3381,
+          "mean_ms": 0.6849
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=male_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.20567,
+      "accuracy_on_accepted": 0.194775,
+      "false_activation_rate": null,
+      "rejection_rate": 0.793547,
+      "envelope_events": {
+        "nominal": 10814,
+        "degraded": 33093,
+        "safe_halt": 8473
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            2783,
+            43,
+            1012,
+            264,
+            0,
+            4628
+          ],
+          [
+            1185,
+            209,
+            300,
+            40,
+            3559,
+            3437
+          ],
+          [
+            311,
+            0,
+            3219,
+            142,
+            0,
+            5058
+          ],
+          [
+            301,
+            0,
+            4223,
+            6,
+            0,
+            4200
+          ],
+          [
+            3535,
+            251,
+            161,
+            614,
+            261,
+            3908
+          ],
+          [
+            303,
+            0,
+            4086,
+            46,
+            0,
+            4295
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2861,
+          "p95_ms": 0.5336,
+          "p99_ms": 0.7677,
+          "max_ms": 5.9542,
+          "mean_ms": 0.3365
+        },
+        "inference": {
+          "p50_ms": 0.2071,
+          "p95_ms": 0.3888,
+          "p99_ms": 0.5726,
+          "max_ms": 11.943,
+          "mean_ms": 0.236
+        },
+        "decision_loop": {
+          "p50_ms": 0.1358,
+          "p95_ms": 0.2509,
+          "p99_ms": 0.3848,
+          "max_ms": 10.0335,
+          "mean_ms": 0.1566
+        },
+        "end_to_end": {
+          "p50_ms": 0.6427,
+          "p95_ms": 1.1483,
+          "p99_ms": 1.578,
+          "max_ms": 12.8949,
+          "mean_ms": 0.7291
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=male_1",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.183448,
+      "accuracy_on_accepted": 0.18361,
+      "false_activation_rate": null,
+      "rejection_rate": 0.565063,
+      "envelope_events": {
+        "nominal": 22782,
+        "degraded": 25505,
+        "safe_halt": 4093
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1523,
+            297,
+            807,
+            1306,
+            720,
+            4077
+          ],
+          [
+            421,
+            95,
+            51,
+            59,
+            8087,
+            17
+          ],
+          [
+            527,
+            6,
+            5882,
+            1490,
+            34,
+            791
+          ],
+          [
+            241,
+            123,
+            8096,
+            86,
+            18,
+            166
+          ],
+          [
+            2974,
+            2484,
+            151,
+            681,
+            1939,
+            501
+          ],
+          [
+            1178,
+            8,
+            7215,
+            172,
+            73,
+            84
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.3444,
+          "p95_ms": 0.6066,
+          "p99_ms": 0.8354,
+          "max_ms": 6.5749,
+          "mean_ms": 0.3952
+        },
+        "inference": {
+          "p50_ms": 14.2002,
+          "p95_ms": 21.1684,
+          "p99_ms": 25.736,
+          "max_ms": 162.7976,
+          "mean_ms": 15.1237
+        },
+        "decision_loop": {
+          "p50_ms": 0.2151,
+          "p95_ms": 0.3687,
+          "p99_ms": 0.509,
+          "max_ms": 4.9153,
+          "mean_ms": 0.2381
+        },
+        "end_to_end": {
+          "p50_ms": 14.8339,
+          "p95_ms": 21.9499,
+          "p99_ms": 26.5886,
+          "max_ms": 163.3964,
+          "mean_ms": 15.757
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=male_1",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.197843,
+      "accuracy_on_accepted": 0.233086,
+      "false_activation_rate": null,
+      "rejection_rate": 0.798931,
+      "envelope_events": {
+        "nominal": 10532,
+        "degraded": 17063,
+        "safe_halt": 24785
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4290,
+            187,
+            433,
+            253,
+            664,
+            2903
+          ],
+          [
+            2805,
+            174,
+            52,
+            63,
+            3876,
+            1760
+          ],
+          [
+            3354,
+            4,
+            2868,
+            609,
+            147,
+            1748
+          ],
+          [
+            1946,
+            63,
+            3981,
+            47,
+            109,
+            2584
+          ],
+          [
+            2784,
+            890,
+            133,
+            625,
+            1574,
+            2724
+          ],
+          [
+            3520,
+            7,
+            3480,
+            111,
+            202,
+            1410
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.3851,
+          "p95_ms": 0.6576,
+          "p99_ms": 0.8997,
+          "max_ms": 12.5549,
+          "mean_ms": 0.4287
+        },
+        "inference": {
+          "p50_ms": 14.6634,
+          "p95_ms": 21.9457,
+          "p99_ms": 26.4602,
+          "max_ms": 68.0373,
+          "mean_ms": 15.6767
+        },
+        "decision_loop": {
+          "p50_ms": 0.2503,
+          "p95_ms": 0.4271,
+          "p99_ms": 0.6171,
+          "max_ms": 11.9363,
+          "mean_ms": 0.2749
+        },
+        "end_to_end": {
+          "p50_ms": 15.3443,
+          "p95_ms": 22.8236,
+          "p99_ms": 27.401,
+          "max_ms": 69.1717,
+          "mean_ms": 16.3803
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=male_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.262734,
+      "accuracy_on_accepted": 0.167994,
+      "false_activation_rate": null,
+      "rejection_rate": 0.930928,
+      "envelope_events": {
+        "nominal": 3618,
+        "degraded": 9692,
+        "safe_halt": 39070
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            2498,
+            867,
+            514,
+            2250,
+            21,
+            2580
+          ],
+          [
+            3402,
+            1012,
+            1226,
+            1867,
+            156,
+            1067
+          ],
+          [
+            10,
+            0,
+            3279,
+            870,
+            0,
+            4571
+          ],
+          [
+            710,
+            50,
+            1012,
+            4564,
+            0,
+            2394
+          ],
+          [
+            476,
+            7333,
+            170,
+            472,
+            183,
+            96
+          ],
+          [
+            2772,
+            487,
+            496,
+            2749,
+            0,
+            2226
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1008,
+          "p95_ms": 0.199,
+          "p99_ms": 0.3393,
+          "max_ms": 23.25,
+          "mean_ms": 0.1228
+        },
+        "inference": {
+          "p50_ms": 0.1769,
+          "p95_ms": 0.3677,
+          "p99_ms": 0.5571,
+          "max_ms": 10.0415,
+          "mean_ms": 0.2128
+        },
+        "decision_loop": {
+          "p50_ms": 0.1211,
+          "p95_ms": 0.2442,
+          "p99_ms": 0.4052,
+          "max_ms": 20.8512,
+          "mean_ms": 0.1454
+        },
+        "end_to_end": {
+          "p50_ms": 0.4043,
+          "p95_ms": 0.799,
+          "p99_ms": 1.1231,
+          "max_ms": 23.9545,
+          "mean_ms": 0.4809
+        }
+      }
+    },
+    {
+      "model": "lda-time|held_out=male_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.210615,
+      "accuracy_on_accepted": 0.192945,
+      "false_activation_rate": null,
+      "rejection_rate": 0.941905,
+      "envelope_events": {
+        "nominal": 3043,
+        "degraded": 21705,
+        "safe_halt": 27632
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            5461,
+            532,
+            317,
+            1114,
+            4,
+            1302
+          ],
+          [
+            5964,
+            571,
+            627,
+            926,
+            134,
+            508
+          ],
+          [
+            3377,
+            0,
+            1558,
+            458,
+            0,
+            3337
+          ],
+          [
+            4922,
+            46,
+            474,
+            2168,
+            0,
+            1120
+          ],
+          [
+            4471,
+            3595,
+            142,
+            364,
+            134,
+            24
+          ],
+          [
+            5786,
+            240,
+            259,
+            1305,
+            0,
+            1140
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.1038,
+          "p95_ms": 0.2011,
+          "p99_ms": 0.3247,
+          "max_ms": 14.9652,
+          "mean_ms": 0.1234
+        },
+        "inference": {
+          "p50_ms": 0.1821,
+          "p95_ms": 0.3721,
+          "p99_ms": 0.5477,
+          "max_ms": 3702.5707,
+          "mean_ms": 0.2859
+        },
+        "decision_loop": {
+          "p50_ms": 0.1256,
+          "p95_ms": 0.2489,
+          "p99_ms": 0.4035,
+          "max_ms": 7.2914,
+          "mean_ms": 0.1487
+        },
+        "end_to_end": {
+          "p50_ms": 0.4175,
+          "p95_ms": 0.8108,
+          "p99_ms": 1.131,
+          "max_ms": 3703.0202,
+          "mean_ms": 0.558
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=male_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.278045,
+      "accuracy_on_accepted": 0.181257,
+      "false_activation_rate": null,
+      "rejection_rate": 0.914719,
+      "envelope_events": {
+        "nominal": 4467,
+        "degraded": 15124,
+        "safe_halt": 32789
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            4074,
+            1062,
+            258,
+            2149,
+            20,
+            1167
+          ],
+          [
+            5681,
+            1491,
+            119,
+            1076,
+            135,
+            228
+          ],
+          [
+            101,
+            1,
+            2951,
+            1778,
+            0,
+            3899
+          ],
+          [
+            2978,
+            216,
+            334,
+            4836,
+            0,
+            366
+          ],
+          [
+            583,
+            7517,
+            97,
+            366,
+            150,
+            17
+          ],
+          [
+            4639,
+            656,
+            150,
+            2223,
+            0,
+            1062
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2689,
+          "p95_ms": 0.5324,
+          "p99_ms": 0.7799,
+          "max_ms": 12.8816,
+          "mean_ms": 0.3211
+        },
+        "inference": {
+          "p50_ms": 0.1876,
+          "p95_ms": 0.3799,
+          "p99_ms": 0.5633,
+          "max_ms": 12.384,
+          "mean_ms": 0.2235
+        },
+        "decision_loop": {
+          "p50_ms": 0.1256,
+          "p95_ms": 0.2489,
+          "p99_ms": 0.4005,
+          "max_ms": 3.8017,
+          "mean_ms": 0.1492
+        },
+        "end_to_end": {
+          "p50_ms": 0.5902,
+          "p95_ms": 1.1278,
+          "p99_ms": 1.5669,
+          "max_ms": 14.0791,
+          "mean_ms": 0.6938
+        }
+      }
+    },
+    {
+      "model": "lda-rich|held_out=male_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.211493,
+      "accuracy_on_accepted": 0.170078,
+      "false_activation_rate": null,
+      "rejection_rate": 0.94118,
+      "envelope_events": {
+        "nominal": 3081,
+        "degraded": 26576,
+        "safe_halt": 22723
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            2605,
+            661,
+            229,
+            1041,
+            2,
+            4192
+          ],
+          [
+            3454,
+            834,
+            76,
+            665,
+            116,
+            3585
+          ],
+          [
+            464,
+            1,
+            1401,
+            931,
+            0,
+            5933
+          ],
+          [
+            2789,
+            177,
+            250,
+            1938,
+            0,
+            3576
+          ],
+          [
+            1491,
+            3646,
+            97,
+            646,
+            121,
+            2729
+          ],
+          [
+            2956,
+            319,
+            85,
+            1191,
+            0,
+            4179
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.2758,
+          "p95_ms": 0.5455,
+          "p99_ms": 0.7991,
+          "max_ms": 12.5449,
+          "mean_ms": 0.3306
+        },
+        "inference": {
+          "p50_ms": 0.1959,
+          "p95_ms": 0.398,
+          "p99_ms": 0.591,
+          "max_ms": 6.2127,
+          "mean_ms": 0.2319
+        },
+        "decision_loop": {
+          "p50_ms": 0.13,
+          "p95_ms": 0.262,
+          "p99_ms": 0.4104,
+          "max_ms": 4.6639,
+          "mean_ms": 0.1551
+        },
+        "end_to_end": {
+          "p50_ms": 0.6132,
+          "p95_ms": 1.1665,
+          "p99_ms": 1.6203,
+          "max_ms": 13.3557,
+          "mean_ms": 0.7176
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=male_2",
+      "condition": "clean",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.163173,
+      "accuracy_on_accepted": 0.147169,
+      "false_activation_rate": null,
+      "rejection_rate": 0.767354,
+      "envelope_events": {
+        "nominal": 12186,
+        "degraded": 32015,
+        "safe_halt": 8179
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            1079,
+            768,
+            1367,
+            495,
+            4732,
+            289
+          ],
+          [
+            132,
+            19,
+            1428,
+            101,
+            6692,
+            358
+          ],
+          [
+            341,
+            313,
+            3100,
+            1804,
+            8,
+            3164
+          ],
+          [
+            121,
+            1193,
+            2541,
+            673,
+            23,
+            4179
+          ],
+          [
+            172,
+            6626,
+            1003,
+            119,
+            738,
+            72
+          ],
+          [
+            396,
+            24,
+            1584,
+            780,
+            3008,
+            2938
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.3978,
+          "p95_ms": 0.6687,
+          "p99_ms": 0.9534,
+          "max_ms": 126.3743,
+          "mean_ms": 0.4471
+        },
+        "inference": {
+          "p50_ms": 15.6176,
+          "p95_ms": 25.1495,
+          "p99_ms": 33.3223,
+          "max_ms": 267.2571,
+          "mean_ms": 17.0144
+        },
+        "decision_loop": {
+          "p50_ms": 0.2629,
+          "p95_ms": 0.4347,
+          "p99_ms": 0.6111,
+          "max_ms": 6.1469,
+          "mean_ms": 0.2898
+        },
+        "end_to_end": {
+          "p50_ms": 16.3355,
+          "p95_ms": 26.0436,
+          "p99_ms": 34.3132,
+          "max_ms": 268.0634,
+          "mean_ms": 17.7512
+        }
+      }
+    },
+    {
+      "model": "rf-rich|held_out=male_2",
+      "condition": "fault_injected",
+      "train_windows": 209520,
+      "eval_windows": 52380,
+      "accuracy": 0.179114,
+      "accuracy_on_accepted": 0.185978,
+      "false_activation_rate": null,
+      "rejection_rate": 0.886483,
+      "envelope_events": {
+        "nominal": 5946,
+        "degraded": 19100,
+        "safe_halt": 27334
+      },
+      "confusion_matrix": {
+        "classes": [
+          "cyl",
+          "hook",
+          "tip",
+          "palm",
+          "spher",
+          "lat"
+        ],
+        "matrix": [
+          [
+            3993,
+            453,
+            800,
+            414,
+            2154,
+            916
+          ],
+          [
+            2262,
+            13,
+            844,
+            116,
+            3302,
+            2193
+          ],
+          [
+            2170,
+            216,
+            1404,
+            794,
+            5,
+            4141
+          ],
+          [
+            857,
+            1089,
+            1488,
+            519,
+            13,
+            4764
+          ],
+          [
+            1499,
+            3442,
+            621,
+            80,
+            321,
+            2767
+          ],
+          [
+            2848,
+            25,
+            845,
+            418,
+            1462,
+            3132
+          ]
+        ]
+      },
+      "latency": {
+        "preprocessing": {
+          "p50_ms": 0.3966,
+          "p95_ms": 0.6364,
+          "p99_ms": 0.867,
+          "max_ms": 12.7711,
+          "mean_ms": 0.4317
+        },
+        "inference": {
+          "p50_ms": 15.0422,
+          "p95_ms": 20.7957,
+          "p99_ms": 26.7327,
+          "max_ms": 769.6699,
+          "mean_ms": 15.88
+        },
+        "decision_loop": {
+          "p50_ms": 0.2638,
+          "p95_ms": 0.4175,
+          "p99_ms": 0.5923,
+          "max_ms": 9.5399,
+          "mean_ms": 0.2817
+        },
+        "end_to_end": {
+          "p50_ms": 15.7392,
+          "p95_ms": 21.6307,
+          "p99_ms": 27.6086,
+          "max_ms": 770.4959,
+          "mean_ms": 16.5933
+        }
+      }
+    }
+  ],
+  "failure_cases": [
+    "[lda-time|held_out=female_1/clean] 32413 misclassified windows: spher->hook x8063, cyl->hook x6385, tip->palm x2634, tip->lat x2520, palm->lat x2465, lat->cyl x2210, cyl->palm x1779, lat->palm x1031, palm->tip x959, tip->hook x902, lat->tip x885, palm->hook x595, spher->palm x449, palm->cyl x287, cyl->lat x230, hook->palm x229, hook->lat x128, tip->cyl x114, spher->tip x104, lat->hook x93, hook->cyl x86, hook->tip x81, spher->lat x67, cyl->tip x59, spher->cyl x47, cyl->spher x11",
+    "[lda-time|held_out=female_1/fault_injected] 37478 misclassified windows: spher->hook x5952, lat->cyl x5511, palm->cyl x4535, tip->cyl x4436, cyl->hook x3881, hook->cyl x2714, spher->cyl x2147, tip->lat x1338, tip->palm x1280, palm->lat x1211, cyl->palm x816, lat->palm x551, tip->hook x517, spher->palm x458, palm->tip x456, lat->tip x448, palm->hook x367, hook->palm x256, cyl->lat x143, hook->lat x140, spher->tip x104, hook->tip x81, spher->lat x69, lat->hook x43, cyl->tip x13, cyl->spher x11",
+    "[lda-rich|held_out=female_1/clean] 31830 misclassified windows: spher->hook x8255, cyl->hook x7488, tip->palm x3969, palm->lat x2294, lat->tip x2018, tip->lat x1945, tip->hook x1271, cyl->palm x926, palm->tip x823, lat->palm x784, lat->cyl x444, palm->hook x413, spher->palm x272, hook->palm x143, hook->tip x139, palm->cyl x124, spher->tip x107, hook->lat x85, tip->cyl x84, hook->cyl x62, cyl->lat x58, spher->lat x53, spher->cyl x43, lat->hook x14, cyl->spher x11, cyl->tip x5",
+    "[lda-rich|held_out=female_1/fault_injected] 38390 misclassified windows: spher->hook x4044, cyl->hook x3827, tip->lat x3727, palm->lat x3617, hook->lat x2518, cyl->lat x2491, lat->tip x2477, spher->lat x2324, tip->palm x1930, palm->tip x1629, spher->tip x1290, hook->tip x1259, cyl->tip x1167, lat->cyl x803, tip->hook x773, hook->cyl x730, palm->cyl x687, tip->cyl x667, spher->cyl x628, lat->palm x465, spher->palm x444, cyl->palm x417, palm->hook x272, hook->palm x182, cyl->spher x11, lat->hook x11",
+    "[rf-rich|held_out=female_1/clean] 37250 misclassified windows: spher->hook x8438, cyl->hook x8368, tip->cyl x4873, lat->cyl x1943, palm->lat x1749, lat->palm x1694, hook->palm x1342, lat->tip x1247, tip->palm x1167, tip->hook x1157, palm->tip x987, palm->cyl x873, palm->hook x802, tip->lat x760, hook->cyl x591, hook->spher x270, cyl->lat x164, hook->lat x113, hook->tip x101, cyl->palm x98, spher->cyl x91, lat->spher x80, spher->lat x78, spher->tip x62, lat->hook x59, cyl->tip x42, palm->spher x38, tip->spher x34, spher->palm x29",
+    "[rf-rich|held_out=female_1/fault_injected] 40453 misclassified windows: spher->hook x8371, cyl->hook x8245, tip->cyl x6275, lat->cyl x4945, palm->cyl x4645, palm->lat x1078, lat->palm x810, tip->hook x745, tip->lat x697, lat->tip x604, tip->palm x563, palm->hook x547, palm->tip x476, hook->palm x468, hook->lat x367, hook->cyl x352, cyl->lat x235, hook->spher x191, spher->lat x146, cyl->palm x126, lat->spher x105, spher->cyl x91, hook->tip x88, spher->tip x62, lat->hook x61, tip->spher x50, cyl->tip x43, palm->spher x39, spher->palm x28",
+    "[lda-time|held_out=female_2/clean] 43121 misclassified windows: hook->spher x5555, cyl->spher x4806, tip->cyl x4248, lat->cyl x4003, palm->cyl x3658, cyl->hook x2893, palm->spher x2855, lat->palm x2426, spher->hook x2070, hook->cyl x2066, lat->tip x1381, tip->spher x1258, tip->palm x1140, tip->lat x1037, palm->hook x852, palm->lat x416, hook->tip x385, spher->cyl x368, cyl->tip x287, hook->palm x273, tip->hook x256, cyl->lat x193, palm->tip x177, spher->lat x139, spher->tip x101, spher->palm x81, lat->spher x61, cyl->palm x51, hook->lat x45, lat->hook x40",
+    "[lda-time|held_out=female_2/fault_injected] 42642 misclassified windows: tip->cyl x5661, lat->cyl x5636, palm->cyl x5356, hook->cyl x4655, spher->cyl x4320, hook->spher x3214, cyl->spher x2382, palm->spher x1961, spher->hook x1368, lat->palm x1127, cyl->hook x1077, lat->tip x1012, tip->lat x885, tip->spher x742, palm->hook x599, tip->palm x519, hook->tip x385, palm->lat x299, cyl->tip x287, tip->hook x204, cyl->lat x193, palm->tip x172, spher->lat x139, hook->palm x121, spher->tip x101, spher->palm x81, cyl->palm x50, hook->lat x45, lat->spher x26, lat->hook x25",
+    "[lda-rich|held_out=female_2/clean] 44437 misclassified windows: lat->cyl x6539, tip->cyl x5917, hook->spher x5560, cyl->spher x4758, palm->cyl x4072, cyl->hook x2952, palm->spher x2880, hook->cyl x2215, spher->hook x1885, tip->spher x1327, lat->palm x1231, palm->hook x1021, lat->tip x715, palm->lat x428, tip->hook x412, tip->palm x361, spher->cyl x313, hook->tip x264, cyl->tip x263, palm->tip x234, spher->lat x222, hook->palm x218, cyl->lat x178, spher->tip x110, lat->spher x110, lat->hook x93, tip->lat x63, cyl->palm x43, spher->palm x41, hook->lat x12",
+    "[lda-rich|held_out=female_2/fault_injected] 42962 misclassified windows: lat->cyl x3304, hook->palm x3283, hook->spher x3228, lat->palm x3081, tip->cyl x2938, tip->palm x2891, cyl->palm x2698, cyl->spher x2401, palm->spher x1962, spher->lat x1892, spher->palm x1667, palm->cyl x1609, lat->tip x1252, spher->cyl x1100, hook->cyl x1085, cyl->hook x1060, cyl->lat x1012, palm->lat x940, spher->hook x932, tip->lat x891, tip->spher x771, palm->hook x664, hook->lat x478, palm->tip x435, cyl->tip x370, hook->tip x313, spher->tip x312, tip->hook x295, lat->hook x50, lat->spher x48",
+    "[rf-rich|held_out=female_2/clean] 39462 misclassified windows: cyl->spher x4176, palm->hook x4140, lat->palm x4017, cyl->hook x3803, tip->palm x3755, spher->hook x3119, lat->cyl x2286, tip->hook x1736, hook->cyl x1654, tip->spher x1353, lat->hook x1246, hook->palm x1187, tip->cyl x1181, palm->cyl x1095, hook->spher x1062, lat->tip x961, palm->spher x866, cyl->tip x310, hook->tip x280, spher->lat x234, spher->cyl x224, palm->tip x161, palm->lat x146, lat->spher x146, tip->lat x86, spher->tip x74, spher->palm x47, cyl->palm x45, hook->lat x39, cyl->lat x33",
+    "[rf-rich|held_out=female_2/fault_injected] 38130 misclassified windows: hook->cyl x4659, spher->cyl x4444, palm->cyl x4019, tip->cyl x2705, palm->hook x2414, lat->palm x2395, cyl->spher x2193, tip->palm x2093, lat->cyl x1722, spher->hook x1615, cyl->hook x1531, tip->lat x1417, tip->spher x890, tip->hook x873, lat->tip x840, palm->lat x827, hook->spher x824, lat->hook x675, palm->spher x471, cyl->tip x313, hook->tip x292, spher->lat x234, hook->palm x225, palm->tip x186, spher->tip x74, lat->spher x48, spher->palm x47, cyl->lat x46, hook->lat x41, cyl->palm x17",
+    "[lda-time|held_out=female_3/clean] 33364 misclassified windows: palm->lat x4405, tip->lat x4375, hook->cyl x4176, cyl->lat x3510, palm->cyl x3085, tip->palm x2997, spher->cyl x2603, lat->cyl x1885, hook->spher x1757, hook->palm x1144, tip->cyl x784, lat->palm x636, hook->lat x556, lat->tip x388, spher->lat x310, cyl->spher x178, cyl->palm x169, palm->tip x147, spher->palm x134, hook->tip x49, spher->tip x36, palm->spher x15, palm->hook x10, spher->hook x8, cyl->tip x7",
+    "[lda-time|held_out=female_3/fault_injected] 37775 misclassified windows: tip->lat x6603, palm->lat x6460, cyl->lat x5830, spher->lat x4220, hook->lat x4202, hook->cyl x2141, palm->cyl x1635, tip->palm x1385, spher->cyl x1048, hook->spher x1035, lat->cyl x969, hook->palm x757, tip->cyl x463, lat->palm x318, lat->tip x163, cyl->spher x147, spher->palm x101, palm->tip x100, cyl->palm x97, spher->tip x36, hook->tip x30, spher->hook x12, palm->hook x9, cyl->tip x7, palm->spher x7",
+    "[lda-rich|held_out=female_3/clean] 33456 misclassified windows: tip->lat x8584, palm->lat x8058, cyl->lat x6055, hook->cyl x3663, hook->spher x2514, spher->cyl x1943, cyl->spher x685, spher->lat x483, palm->cyl x442, hook->palm x373, hook->lat x341, palm->spher x213, tip->palm x26, spher->hook x24, palm->tip x12, lat->tip x12, lat->cyl x12, spher->tip x8, hook->tip x5, spher->palm x2, lat->palm x1",
+    "[lda-rich|held_out=female_3/fault_injected] 37914 misclassified windows: tip->lat x8661, palm->lat x8227, cyl->lat x6980, spher->lat x4680, hook->lat x4583, hook->cyl x1543, hook->spher x1447, spher->cyl x459, cyl->spher x444, hook->palm x334, palm->cyl x333, palm->spher x152, spher->hook x15, palm->tip x13, lat->cyl x12, tip->palm x11, spher->tip x8, hook->tip x5, lat->tip x4, spher->palm x2, lat->palm x1",
+    "[rf-rich|held_out=female_3/clean] 29327 misclassified windows: palm->lat x4563, tip->lat x3461, spher->cyl x2808, tip->palm x2347, hook->cyl x2137, palm->tip x1620, palm->cyl x1576, hook->lat x1383, spher->hook x1283, hook->spher x1212, tip->spher x1085, cyl->spher x940, hook->palm x801, cyl->lat x605, hook->tip x584, lat->spher x486, lat->palm x444, spher->tip x328, lat->tip x319, lat->hook x277, tip->hook x240, spher->lat x185, palm->spher x175, cyl->hook x145, spher->palm x100, tip->cyl x81, cyl->palm x55, lat->cyl x38, palm->hook x28, cyl->tip x21",
+    "[rf-rich|held_out=female_3/fault_injected] 36863 misclassified windows: palm->lat x5916, tip->lat x5655, cyl->lat x4519, spher->lat x3776, hook->cyl x3194, hook->lat x2793, spher->cyl x2055, palm->cyl x1235, tip->palm x1114, palm->tip x1072, tip->spher x810, spher->hook x738, hook->spher x646, cyl->spher x570, hook->palm x521, lat->spher x304, lat->palm x265, lat->cyl x225, lat->tip x223, palm->spher x196, tip->cyl x194, hook->tip x186, lat->hook x145, tip->hook x136, cyl->hook x129, spher->tip x124, spher->palm x69, palm->hook x24, cyl->palm x22, cyl->tip x7",
+    "[lda-time|held_out=male_1/clean] 42306 misclassified windows: palm->tip x8575, lat->tip x8186, hook->spher x6848, spher->cyl x5729, cyl->lat x4344, cyl->tip x2131, tip->lat x1486, spher->palm x920, spher->lat x823, spher->hook x645, hook->cyl x575, tip->palm x571, cyl->palm x534, spher->tip x256, hook->tip x236, lat->palm x162, palm->lat x99, tip->cyl x64, hook->lat x37, hook->palm x36, lat->cyl x25, palm->cyl x16, cyl->hook x5, palm->hook x2, tip->hook x1",
+    "[lda-time|held_out=male_1/fault_injected] 40354 misclassified windows: spher->cyl x6975, hook->cyl x4611, palm->tip x4180, tip->lat x4127, palm->lat x4052, lat->tip x4038, hook->spher x3553, cyl->lat x2734, cyl->tip x1188, tip->cyl x1184, lat->cyl x925, spher->palm x559, palm->cyl x460, spher->lat x381, tip->palm x332, spher->hook x307, hook->tip x235, cyl->palm x172, spher->tip x169, lat->palm x91, hook->lat x38, hook->palm x36, cyl->hook x4, palm->hook x2, tip->hook x1",
+    "[lda-rich|held_out=male_1/clean] 40649 misclassified windows: palm->tip x8624, lat->tip x8284, hook->spher x6831, spher->cyl x6020, cyl->lat x2714, cyl->tip x1755, tip->lat x1619, spher->palm x1001, cyl->palm x969, spher->hook x685, spher->lat x550, hook->cyl x539, hook->tip x300, tip->palm x226, spher->tip x199, palm->lat x99, lat->palm x76, hook->lat x56, cyl->hook x50, hook->palm x40, tip->cyl x11, palm->cyl x1",
+    "[lda-rich|held_out=male_1/fault_injected] 41607 misclassified windows: tip->lat x5058, cyl->lat x4628, palm->tip x4223, palm->lat x4200, lat->tip x4086, spher->lat x3908, hook->spher x3559, spher->cyl x3535, hook->lat x3437, hook->cyl x1185, cyl->tip x1012, spher->palm x614, tip->cyl x311, lat->cyl x303, palm->cyl x301, hook->tip x300, cyl->palm x264, spher->hook x251, spher->tip x161, tip->palm x142, lat->palm x46, cyl->hook x43, hook->palm x40",
+    "[rf-rich|held_out=male_1/clean] 42771 misclassified windows: palm->tip x8096, hook->spher x8087, lat->tip x7215, cyl->lat x4077, spher->cyl x2974, spher->hook x2484, tip->palm x1490, cyl->palm x1306, lat->cyl x1178, cyl->tip x807, tip->lat x791, cyl->spher x720, spher->palm x681, tip->cyl x527, spher->lat x501, hook->cyl x421, cyl->hook x297, palm->cyl x241, lat->palm x172, palm->lat x166, spher->tip x151, palm->hook x123, lat->spher x73, hook->palm x59, hook->tip x51, tip->spher x34, palm->spher x18, hook->lat x17, lat->hook x8, tip->hook x6",
+    "[rf-rich|held_out=male_1/fault_injected] 42017 misclassified windows: palm->tip x3981, hook->spher x3876, lat->cyl x3520, lat->tip x3480, tip->cyl x3354, cyl->lat x2903, hook->cyl x2805, spher->cyl x2784, spher->lat x2724, palm->lat x2584, palm->cyl x1946, hook->lat x1760, tip->lat x1748, spher->hook x890, cyl->spher x664, spher->palm x625, tip->palm x609, cyl->tip x433, cyl->palm x253, lat->spher x202, cyl->hook x187, tip->spher x147, spher->tip x133, lat->palm x111, palm->spher x109, hook->palm x63, palm->hook x63, hook->tip x52, lat->hook x7, tip->hook x4",
+    "[lda-time|held_out=male_2/clean] 38618 misclassified windows: spher->hook x7333, tip->lat x4571, hook->cyl x3402, lat->cyl x2772, lat->palm x2749, cyl->lat x2580, palm->lat x2394, cyl->palm x2250, hook->palm x1867, hook->tip x1226, hook->lat x1067, palm->tip x1012, tip->palm x870, cyl->hook x867, palm->cyl x710, cyl->tip x514, lat->tip x496, lat->hook x487, spher->cyl x476, spher->palm x472, spher->tip x170, hook->spher x156, spher->lat x96, palm->hook x50, cyl->spher x21, tip->cyl x10",
+    "[lda-time|held_out=male_2/fault_injected] 41348 misclassified windows: hook->cyl x5964, lat->cyl x5786, palm->cyl x4922, spher->cyl x4471, spher->hook x3595, tip->cyl x3377, tip->lat x3337, lat->palm x1305, cyl->lat x1302, palm->lat x1120, cyl->palm x1114, hook->palm x926, hook->tip x627, cyl->hook x532, hook->lat x508, palm->tip x474, tip->palm x458, spher->palm x364, cyl->tip x317, lat->tip x259, lat->hook x240, spher->tip x142, hook->spher x134, palm->hook x46, spher->lat x24, cyl->spher x4",
+    "[lda-rich|held_out=male_2/clean] 37816 misclassified windows: spher->hook x7517, hook->cyl x5681, lat->cyl x4639, tip->lat x3899, palm->cyl x2978, lat->palm x2223, cyl->palm x2149, tip->palm x1778, cyl->lat x1167, hook->palm x1076, cyl->hook x1062, lat->hook x656, spher->cyl x583, palm->lat x366, spher->palm x366, palm->tip x334, cyl->tip x258, hook->lat x228, palm->hook x216, lat->tip x150, hook->spher x135, hook->tip x119, tip->cyl x101, spher->tip x97, cyl->spher x20, spher->lat x17, tip->hook x1",
+    "[lda-rich|held_out=male_2/fault_injected] 41302 misclassified windows: tip->lat x5933, cyl->lat x4192, spher->hook x3646, hook->lat x3585, palm->lat x3576, hook->cyl x3454, lat->cyl x2956, palm->cyl x2789, spher->lat x2729, spher->cyl x1491, lat->palm x1191, cyl->palm x1041, tip->palm x931, hook->palm x665, cyl->hook x661, spher->palm x646, tip->cyl x464, lat->hook x319, palm->tip x250, cyl->tip x229, palm->hook x177, hook->spher x116, spher->tip x97, lat->tip x85, hook->tip x76, cyl->spher x2, tip->hook x1",
+    "[rf-rich|held_out=male_2/clean] 43833 misclassified windows: hook->spher x6692, spher->hook x6626, cyl->spher x4732, palm->lat x4179, tip->lat x3164, lat->spher x3008, palm->tip x2541, tip->palm x1804, lat->tip x1584, hook->tip x1428, cyl->tip x1367, palm->hook x1193, spher->tip x1003, lat->palm x780, cyl->hook x768, cyl->palm x495, lat->cyl x396, hook->lat x358, tip->cyl x341, tip->hook x313, cyl->lat x289, spher->cyl x172, hook->cyl x132, palm->cyl x121, spher->palm x119, hook->palm x101, spher->lat x72, lat->hook x24, palm->spher x23, tip->spher x8",
+    "[rf-rich|held_out=male_2/fault_injected] 42998 misclassified windows: palm->lat x4764, tip->lat x4141, spher->hook x3442, hook->spher x3302, lat->cyl x2848, spher->lat x2767, hook->cyl x2262, hook->lat x2193, tip->cyl x2170, cyl->spher x2154, spher->cyl x1499, palm->tip x1488, lat->spher x1462, palm->hook x1089, cyl->lat x916, palm->cyl x857, lat->tip x845, hook->tip x844, cyl->tip x800, tip->palm x794, spher->tip x621, cyl->hook x453, lat->palm x418, cyl->palm x414, tip->hook x216, hook->palm x116, spher->palm x80, lat->hook x25, palm->spher x13, tip->spher x5"
+  ],
+  "research_gate": {
+    "status": "FAIL",
+    "decision_windows_evaluated": 1571400,
+    "fallback_events_recorded": 1269660,
+    "accuracy_floor": 0.25,
+    "checks": {
+      "pipeline_runs_end_to_end": true,
+      "p95_latency_reported": true,
+      "fallback_condition_implemented": true,
+      "accuracy_above_chance": false,
+      "reproducibility_controls_present": true,
+      "limitations_stated": true
+    }
+  },
+  "limitations": [
+    "Real surface-EMG dataset (leave-one-subject-out (all trials of the held-out subject)); accuracy is not comparable across protocols (within-subject vs leave-one-subject-out differ substantially) and must not be quoted without the protocol.",
+    "Zero-phase offline filtering (filtfilt) is used for replay; an online causal filter will add group delay on hardware.",
+    "Latency is measured on a development workstation under a general-purpose OS; it establishes software cost order-of-magnitude, not embedded worst-case execution time.",
+    "Power is not measured in software; the eventized scheduler addresses the power budget on target hardware.",
+    "Torque/velocity values are simulated actuator abstractions, not physical joint torques."
+  ],
+  "next_hardware_implication": "If p95 decision-loop + inference latency remains well under the 20 ms stride budget on this workstation class, an MCU (Cortex-M7-class) is the justified first target; FPGA acceleration is revisited only if measured online inference or multi-channel preprocessing exceeds the budget."
+}
