@@ -18,6 +18,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,62 @@ class LdaBaseline:
     def predict(self, features: NDArray[np.float64]) -> Prediction:
         if not self._fitted:
             raise RuntimeError("LdaBaseline.predict called before fit")
+        proba = self._model.predict_proba(features.reshape(1, -1))[0]
+        best = int(np.argmax(proba))
+        return Prediction(intent=self._classes[best], confidence=float(proba[best]))
+
+
+class ShrinkageLdaBaseline:
+    """LDA with Ledoit-Wolf shrinkage; suited to small samples, many features."""
+
+    def __init__(self) -> None:
+        self._model = LinearDiscriminantAnalysis(solver="lsqr", shrinkage="auto")
+        self._classes: tuple[str, ...] = ()
+        self._fitted = False
+
+    def fit(self, features: NDArray[np.float64], labels: list[str]) -> None:
+        if len(labels) == 0:
+            raise ValueError("cannot fit shrinkage LDA on an empty training set")
+        self._model.fit(features, labels)
+        self._classes = tuple(str(c) for c in self._model.classes_)
+        self._fitted = True
+
+    @property
+    def classes(self) -> tuple[str, ...]:
+        return self._classes
+
+    def predict(self, features: NDArray[np.float64]) -> Prediction:
+        if not self._fitted:
+            raise RuntimeError("ShrinkageLdaBaseline.predict called before fit")
+        proba = self._model.predict_proba(features.reshape(1, -1))[0]
+        best = int(np.argmax(proba))
+        return Prediction(intent=self._classes[best], confidence=float(proba[best]))
+
+
+class RandomForestBaseline:
+    """Random-forest classifier over the rich feature set."""
+
+    def __init__(self, seed: int = 20261011, n_estimators: int = 300) -> None:
+        self._model = RandomForestClassifier(
+            n_estimators=n_estimators, random_state=seed, n_jobs=1
+        )
+        self._classes: tuple[str, ...] = ()
+        self._fitted = False
+
+    def fit(self, features: NDArray[np.float64], labels: list[str]) -> None:
+        if len(labels) == 0:
+            raise ValueError("cannot fit random forest on an empty training set")
+        self._model.fit(features, labels)
+        self._classes = tuple(str(c) for c in self._model.classes_)
+        self._fitted = True
+
+    @property
+    def classes(self) -> tuple[str, ...]:
+        return self._classes
+
+    def predict(self, features: NDArray[np.float64]) -> Prediction:
+        if not self._fitted:
+            raise RuntimeError("RandomForestBaseline.predict called before fit")
         proba = self._model.predict_proba(features.reshape(1, -1))[0]
         best = int(np.argmax(proba))
         return Prediction(intent=self._classes[best], confidence=float(proba[best]))

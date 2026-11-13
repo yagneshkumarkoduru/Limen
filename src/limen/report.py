@@ -28,6 +28,8 @@ class ReportContext:
 
     dataset_name: str
     dataset_license: str
+    dataset_kind: str = "synthetic"  # "synthetic" or "real"
+    protocol: str = ""
 
 
 def _run_block(result: RunResult, classes: tuple[str, ...]) -> dict:
@@ -38,6 +40,7 @@ def _run_block(result: RunResult, classes: tuple[str, ...]) -> dict:
         "train_windows": result.n_train_windows,
         "eval_windows": result.n_eval_windows,
         "accuracy": t.accuracy(),
+        "accuracy_on_accepted": t.accuracy_on_accepted(),
         "false_activation_rate": t.false_activation_rate(),
         "rejection_rate": t.rejection_rate(),
         "envelope_events": t.envelope_event_counts(),
@@ -46,14 +49,21 @@ def _run_block(result: RunResult, classes: tuple[str, ...]) -> dict:
     }
 
 
-def build_report_dict(
-    cfg: BenchmarkConfig, results: list[RunResult], ctx: ReportContext
-) -> dict:
-    if not results:
-        raise ValueError("cannot build a report from zero runs")
-    limitations = [
-        "Synthetic dataset: separability is easier than real surface EMG; "
-        "absolute accuracy numbers must not be quoted as real-world performance.",
+def _limitations_for(ctx: ReportContext) -> list[str]:
+    if ctx.dataset_kind == "real":
+        first = (
+            f"Real surface-EMG dataset ({ctx.protocol or 'unspecified protocol'}); "
+            "accuracy is not comparable across protocols (within-subject vs "
+            "leave-one-subject-out differ substantially) and must not be quoted "
+            "without the protocol."
+        )
+    else:
+        first = (
+            "Synthetic dataset: separability is easier than real surface EMG; "
+            "absolute accuracy numbers must not be quoted as real-world performance."
+        )
+    return [
+        first,
         "Zero-phase offline filtering (filtfilt) is used for replay; an online "
         "causal filter will add group delay on hardware.",
         "Latency is measured on a development workstation under a general-purpose OS; "
@@ -64,11 +74,24 @@ def build_report_dict(
         "Torque/velocity values are simulated actuator abstractions, not physical "
         "joint torques.",
     ]
-    research_gate = _research_gate(results, limitations)
+
+
+def build_report_dict(
+    cfg: BenchmarkConfig, results: list[RunResult], ctx: ReportContext
+) -> dict:
+    if not results:
+        raise ValueError("cannot build a report from zero runs")
+    limitations = _limitations_for(ctx)
+    research_gate = _research_gate(results, limitations, n_classes=len(cfg.intent_classes))
     return {
         "report": "Limen EMG/IMU Safety Benchmark",
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "dataset": {"source": ctx.dataset_name, "license": ctx.dataset_license},
+        "dataset": {
+            "source": ctx.dataset_name,
+            "license": ctx.dataset_license,
+            "kind": ctx.dataset_kind,
+            "protocol": ctx.protocol,
+        },
         "configuration": {
             "seed": cfg.seed,
             "intent_classes": list(cfg.intent_classes),
@@ -110,11 +133,15 @@ def build_report_dict(
     }
 
 
-def _research_gate(results: list[RunResult], limitations: list[str]) -> dict:
+def _research_gate(
+    results: list[RunResult], limitations: list[str], n_classes: int = 0
+) -> dict:
     """Evaluate the software research stage gate.
 
     This is an acceptance check for the software research stage, not a claim
     that synthetic evidence generalizes to people, products, or hardware.
+    The accuracy check requires every run to beat 1.5x the chance level, so a
+    pipeline that predicts at chance fails the gate.
     """
     decision_windows = sum(result.n_eval_windows for result in results)
     fallback_events = sum(
@@ -122,6 +149,8 @@ def _research_gate(results: list[RunResult], limitations: list[str]) -> dict:
         + result.telemetry.envelope_event_counts()["safe_halt"]
         for result in results
     )
+    chance = (1.0 / n_classes) if n_classes > 0 else 0.0
+    accuracy_floor = chance * 1.5
     checks = {
         "pipeline_runs_end_to_end": all(result.n_eval_windows > 0 for result in results),
         "p95_latency_reported": all(
@@ -129,6 +158,9 @@ def _research_gate(results: list[RunResult], limitations: list[str]) -> dict:
             for result in results
         ),
         "fallback_condition_implemented": fallback_events > 0,
+        "accuracy_above_chance": all(
+            result.telemetry.accuracy() > accuracy_floor for result in results
+        ),
         "reproducibility_controls_present": True,
         "limitations_stated": len(limitations) > 0,
     }
@@ -136,6 +168,7 @@ def _research_gate(results: list[RunResult], limitations: list[str]) -> dict:
         "status": "PASS" if all(checks.values()) else "FAIL",
         "decision_windows_evaluated": decision_windows,
         "fallback_events_recorded": fallback_events,
+        "accuracy_floor": round(accuracy_floor, 6),
         "checks": checks,
     }
 
@@ -196,7 +229,9 @@ def write_report(report: dict, out_dir: Path) -> tuple[Path, Path]:
         lines.append("")
         lines.append(f"- Eval windows: {run['eval_windows']} (train: {run['train_windows']})")
         lines.append(f"- Accuracy: {run['accuracy']:.4f}")
-        lines.append(f"- False activation rate: {run['false_activation_rate']:.4f}")
+        far = run["false_activation_rate"]
+        far_text = "n/a (no rest windows in this protocol)" if far is None else f"{far:.4f}"
+        lines.append(f"- False activation rate: {far_text}")
         lines.append(f"- Rejection rate (envelope constrained): {run['rejection_rate']:.4f}")
         lines.append(f"- Envelope events: {run['envelope_events']}")
         lat = run["latency"]["end_to_end"]

@@ -1,17 +1,16 @@
-"""Deterministic eventized multi-rate control scheduler.
+"""Cycle-grid multi-rate fabric for deterministic replay and HIL planning.
 
-Keeps safety supervision on a continuous mandatory period while allowing
-higher-cost inference to run only after meaningful signal events. This is
-a virtual scheduler for replay and HIL planning; it does not claim real-time
-guarantees on a general-purpose operating system.
+Supervision runs on a fixed continuous cadence while the costlier
+inference path is eventized: an inference cycle only fires when at least
+one meaningful signal event arrived since the previous inference slot.
+The fabric never touches a wall clock, so a given event list and horizon
+always reproduce the identical emission stream. Within one timestamp the
+emission order is:
 
-The scheduler has no wall-clock calls. Given the same signal events and end
-time, it emits the same ordered event stream:
+    safety tick -> inference (when activated) -> telemetry tick
 
-    signal ingestion -> safety tick -> inference (if pending) -> telemetry
-
-Safety is always scheduled at its configured period. Inference is eventized:
-no meaningful event means no inference event.
+This is a virtual fabric. It makes no real-time scheduling claims on a
+general-purpose operating system.
 """
 
 from __future__ import annotations
@@ -21,17 +20,28 @@ from dataclasses import dataclass
 
 
 class FabricEventKind(enum.Enum):
+    """Category of one emitted fabric event."""
+
     SAFETY_TICK = "safety_tick"
     INFERENCE = "inference"
     TELEMETRY_TICK = "telemetry_tick"
 
+    @property
+    def is_periodic_supervision(self) -> bool:
+        """True for the mandatory supervision cadence channel."""
+        return self is FabricEventKind.SAFETY_TICK
+
+    @property
+    def is_event_driven(self) -> bool:
+        """True for channels gated by meaningful signal activity."""
+        return self is FabricEventKind.INFERENCE
+
 
 @dataclass(frozen=True)
 class SignalEvent:
-    """An input event observed by the scheduler."""
+    """One observed input event offered to the fabric."""
 
-    timestamp_us: int
-    meaningful: bool
+    timestamp_us: int; meaningful: bool
 
     def __post_init__(self) -> None:
         if self.timestamp_us < 0:
@@ -40,108 +50,122 @@ class SignalEvent:
 
 @dataclass(frozen=True)
 class FabricEvent:
-    """One scheduled control-fabric event."""
+    """One control-fabric emission."""
 
-    timestamp_us: int
-    kind: FabricEventKind
+    timestamp_us: int; kind: FabricEventKind
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class FabricRun:
-    """Scheduler output and deterministic accounting."""
+    """Emission stream plus deterministic accounting."""
 
-    events: tuple[FabricEvent, ...]
-    safety_ticks: int
-    inference_events: int
-    telemetry_ticks: int
-    missed_safety_deadlines: int
+    events: tuple[FabricEvent, ...]; safety_ticks: int; inference_events: int
+    telemetry_ticks: int; missed_safety_deadlines: int
 
 
 class EventizedMultiRateFabric:
-    """Virtual multi-rate scheduler with mandatory safety ticks."""
+    """Multi-rate virtual fabric with a mandatory supervision cadence.
 
-    def __init__(
-        self,
-        safety_period_us: int = 1_000,
-        inference_period_us: int = 20_000,
-        telemetry_period_us: int = 20_000,
-    ) -> None:
-        periods = {
-            "safety_period_us": safety_period_us,
-            "inference_period_us": inference_period_us,
-            "telemetry_period_us": telemetry_period_us,
-        }
-        for name, value in periods.items():
-            if not isinstance(value, int) or value <= 0:
-                raise ValueError(f"{name} must be a positive integer")
-        if safety_period_us > inference_period_us:
+    Supervision floor: the documented safety cadence runs at 1 kHz, and
+    any period under 100 us exceeds every supported supervision rate, so
+    the constructor refuses it.
+    """
+
+    MIN_SAFETY_PERIOD_US = 100
+
+    def __init__(self, safety_period_us: int = 1_000, inference_period_us: int = 20_000, telemetry_period_us: int = 20_000) -> None:
+        for label in ("safety_period_us", "inference_period_us", "telemetry_period_us"):
+            candidate = {"safety_period_us": safety_period_us, "inference_period_us": inference_period_us, "telemetry_period_us": telemetry_period_us}[label]
+            if not isinstance(candidate, int) or candidate <= 0:
+                raise ValueError(f"{label} must be a positive integer")
+        if safety_period_us < self.MIN_SAFETY_PERIOD_US:
+            raise ValueError(f"safety_period_us must be at least {self.MIN_SAFETY_PERIOD_US} us")
+        if inference_period_us % safety_period_us != 0:
             raise ValueError("safety period must not be slower than inference period")
-        self._safety_period_us = safety_period_us
-        self._inference_period_us = inference_period_us
-        self._telemetry_period_us = telemetry_period_us
+        self._periods = (safety_period_us, inference_period_us, telemetry_period_us)
 
-    def run(self, signal_events: tuple[SignalEvent, ...], end_time_us: int) -> FabricRun:
-        """Run from time zero through ``end_time_us`` inclusive.
-
-        Input events must be timestamp ordered. Same-timestamp events are
-        consumed before scheduled work so a meaningful event can activate an
-        inference cycle due at that exact timestamp.
-        """
+    @staticmethod
+    def _validate_run_inputs(signal_events: tuple[SignalEvent, ...], end_time_us: int) -> None:
         if not isinstance(end_time_us, int) or end_time_us < 0:
             raise ValueError("end_time_us must be a non-negative integer")
-        if any(not isinstance(event, SignalEvent) for event in signal_events):
-            raise TypeError("signal_events must contain only SignalEvent values")
-        for previous, current in zip(signal_events, signal_events[1:]):
-            if current.timestamp_us < previous.timestamp_us:
+        for event in signal_events:
+            if not isinstance(event, SignalEvent):
+                raise TypeError("signal_events must contain only SignalEvent values")
+        horizon_us = end_time_us
+        previous_stamp: int | None = None
+        for event in signal_events:
+            stamp = event.timestamp_us
+            if stamp == previous_stamp:
+                raise ValueError("duplicate signal_event timestamps are not supported")
+            if previous_stamp is not None and stamp < previous_stamp:
                 raise ValueError("signal_events must be ordered by timestamp")
-        if any(event.timestamp_us > end_time_us for event in signal_events):
-            raise ValueError("signal event occurs after end_time_us")
+            if stamp > horizon_us:
+                raise ValueError("signal event occurs after end_time_us")
+            previous_stamp = stamp
 
-        next_safety = 0
-        next_inference = 0
-        next_telemetry = 0
-        input_index = 0
-        pending_inference = False
-        events: list[FabricEvent] = []
+    def _grid(self, end_time_us: int, extra_instants: set[int]) -> list[tuple[int, tuple[bool, bool, bool]]]:
+        """Merge the three periodic channels plus ``extra_instants`` into one grid.
 
-        while True:
-            candidates = [next_safety, next_inference, next_telemetry]
-            if input_index < len(signal_events):
-                candidates.append(signal_events[input_index].timestamp_us)
-            timestamp = min(candidates)
-            if timestamp > end_time_us:
-                break
+        Produces (timestamp, (is_safety, is_inference, is_telemetry)) rows
+        covering every channel tick and every extra instant from zero
+        through the horizon, in ascending order.
+        """
+        periods = self._periods
+        schedule: dict[int, list[bool]] = {}
+        for instant in extra_instants:
+            schedule[instant] = [False, False, False]
+        for channel, period in enumerate(periods):
+            slot = 0
+            while slot * period <= end_time_us:
+                instant = slot * period
+                flags = schedule.setdefault(instant, [False, False, False])
+                flags[channel] = True
+                slot += 1
+        merged = sorted(schedule.items())
+        return [(when, (flags[0], flags[1], flags[2])) for when, flags in merged]
 
-            while (
-                input_index < len(signal_events)
-                and signal_events[input_index].timestamp_us == timestamp
-            ):
-                if signal_events[input_index].meaningful:
-                    pending_inference = True
-                input_index += 1
+    def run(self, signal_events: tuple[SignalEvent, ...], end_time_us: int) -> FabricRun:
+        """Emit the fabric stream from time zero through ``end_time_us``.
 
-            if next_safety == timestamp:
-                events.append(FabricEvent(timestamp, FabricEventKind.SAFETY_TICK))
-                next_safety += self._safety_period_us
+        The input list must be timestamp ordered with unique timestamps.
+        A signal event sharing a tick's timestamp is folded in before the
+        tick fires, so a meaningful event at exactly an inference slot
+        activates that slot's inference cycle.
+        """
+        self._validate_run_inputs(signal_events, end_time_us)
 
-            if next_inference == timestamp:
-                if pending_inference:
-                    events.append(FabricEvent(timestamp, FabricEventKind.INFERENCE))
-                    pending_inference = False
-                next_inference += self._inference_period_us
+        activation_by_time: dict[int, bool] = {}
+        for event in signal_events:
+            activation_by_time[event.timestamp_us] = event.meaningful
 
-            if next_telemetry == timestamp:
-                events.append(FabricEvent(timestamp, FabricEventKind.TELEMETRY_TICK))
-                next_telemetry += self._telemetry_period_us
+        stream: list[FabricEvent] = []
+        counts = [0, 0, 0]
+        queued_request = False
 
-        safety_ticks = sum(event.kind is FabricEventKind.SAFETY_TICK for event in events)
-        inference_events = sum(event.kind is FabricEventKind.INFERENCE for event in events)
-        telemetry_ticks = sum(event.kind is FabricEventKind.TELEMETRY_TICK for event in events)
-        expected_safety = end_time_us // self._safety_period_us + 1
-        return FabricRun(
-            events=tuple(events),
-            safety_ticks=safety_ticks,
-            inference_events=inference_events,
-            telemetry_ticks=telemetry_ticks,
-            missed_safety_deadlines=max(0, expected_safety - safety_ticks),
-        )
+        grid = self._grid(end_time_us, set(activation_by_time))
+        for instant, (is_safety, is_inference, is_telemetry) in grid:
+            activation = activation_by_time.get(instant, None)
+            if activation is not None:
+                queued_request = queued_request or activation
+
+            if is_safety:
+                stream.append(FabricEvent(instant, FabricEventKind.SAFETY_TICK))
+                counts[0] += 1
+
+            if is_inference and queued_request:
+                stream.append(FabricEvent(instant, FabricEventKind.INFERENCE))
+                counts[1] += 1
+                queued_request = False
+
+            if is_telemetry:
+                stream.append(FabricEvent(instant, FabricEventKind.TELEMETRY_TICK))
+                counts[2] += 1
+
+        expected_safety = end_time_us // self._periods[0] + 1
+        missed = expected_safety - counts[0]
+        if missed < 0:
+            missed = 0
+        summary = FabricRun(
+            events=tuple(stream), safety_ticks=counts[0], inference_events=counts[1],
+            telemetry_ticks=counts[2], missed_safety_deadlines=missed)
+        return summary

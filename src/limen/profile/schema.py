@@ -1,73 +1,100 @@
-"""Strict Limen partner-profile schema and validation.
+"""Partner device profile model and strict input gate.
 
-The profile is the single source of truth for a partner device's sensors,
-intent classes, actuator limits, and fault paths. The parser rejects unknown
-fields and physically incoherent values instead of silently applying defaults.
+A profile declares everything Limen needs to trust a partner device: its
+sensing channels, the intents it distinguishes, the physical envelope of its
+actuator, and the deterministic response to each sensor loss. Validation is
+table driven: every field carries a declared rule, and the gate rejects both
+absent and unlisted keys rather than guessing intent.
 """
 
 from __future__ import annotations
 
 import json
-import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dataclass_fields
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
+
+_POSITIVE_INFINITY = float("inf")
+
+
+def _finite(magnitude: float) -> bool:
+    return magnitude == magnitude and abs(magnitude) != _POSITIVE_INFINITY
 
 
 class ProfileValidationError(ValueError):
     """Raised when a partner profile cannot be safely compiled."""
 
 
-_IDENTIFIER = re.compile(r"^[a-z][a-z0-9_-]{2,63}$")
-_SENSOR_TYPES = frozenset({"emg", "imu", "pressure", "machine_state"})
-_FALLBACK_ACTIONS = frozenset({"safe_halt", "hold_position", "zero_output"})
+_NAME_RULE = re.compile(r"^[a-z][a-z0-9_-]{2,63}$")
+_VALID_SENSOR_KINDS = frozenset({"emg", "imu", "pressure", "machine_state"})
+_VALID_FAULT_RESPONSES = frozenset({"safe_halt", "hold_position", "zero_output"})
+_SAMPLE_RATE_CEILING_HZ = 1_000_000.0
+_CHANNEL_FLOOR = 1
+_CHANNEL_CEILING = 64
+_INTENT_CEILING = 64
 
 
-def _mapping(value: Any, context: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        raise ProfileValidationError(f"{context} must be an object")
-    return value
+def _reject(message: str) -> None:
+    raise ProfileValidationError(message)
 
 
-def _exact_keys(value: Mapping[str, Any], required: set[str], context: str) -> None:
-    missing = sorted(required - set(value))
-    extra = sorted(set(value) - required)
-    if missing:
-        raise ProfileValidationError(f"{context} missing required fields: {', '.join(missing)}")
-    if extra:
-        raise ProfileValidationError(f"{context} has unknown fields: {', '.join(extra)}")
+def _object_guard(node: Any, where: str) -> Mapping[str, Any]:
+    if isinstance(node, Mapping):
+        return node
+    _reject(f"{where} must be an object")
+    raise AssertionError("unreachable")
 
 
-def _string(value: Any, context: str, pattern: re.Pattern[str] | None = None) -> str:
-    if not isinstance(value, str) or not value:
-        raise ProfileValidationError(f"{context} must be a non-empty string")
-    if pattern is not None and pattern.fullmatch(value) is None:
-        raise ProfileValidationError(f"{context} has invalid identifier {value!r}")
-    return value
+def _key_guard(node: Mapping[str, Any], allowed: set[str], where: str) -> None:
+    absent = sorted(allowed.difference(node))
+    surplus = sorted(set(node).difference(allowed))
+    if absent:
+        _reject(f"{where} missing required fields: {', '.join(absent)}")
+    if surplus:
+        _reject(f"{where} has unknown fields: {', '.join(surplus)}")
 
 
-def _positive_number(value: Any, context: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ProfileValidationError(f"{context} must be a number")
-    result = float(value)
-    if not math.isfinite(result) or result <= 0.0:
-        raise ProfileValidationError(f"{context} must be finite and greater than zero")
-    return result
+def _text_guard(node: Any, where: str, rule: re.Pattern[str] | None = None) -> str:
+    if not isinstance(node, str) or not node:
+        _reject(f"{where} must be a non-empty string")
+    if rule is not None and rule.fullmatch(node) is None:
+        _reject(f"{where} has invalid identifier {node!r}")
+    return node
 
 
-def _nonnegative_number(value: Any, context: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ProfileValidationError(f"{context} must be a number")
-    result = float(value)
-    if not math.isfinite(result) or result < 0.0:
-        raise ProfileValidationError(f"{context} must be finite and non-negative")
-    return result
+def _numeric_guard(node: Any, where: str, floor: float | None, open_floor: bool) -> float:
+    if isinstance(node, bool) or not isinstance(node, (int, float)):
+        _reject(f"{where} must be a number")
+    magnitude = float(node)
+    if floor is None:
+        if not _finite(magnitude):
+            _reject(f"{where} must be finite")
+        return magnitude
+    wording = "greater than zero" if open_floor else "non-negative"
+    out_of_range = magnitude <= floor if open_floor else magnitude < floor
+    if not _finite(magnitude) or out_of_range:
+        _reject(f"{where} must be finite and {wording}")
+    return magnitude
+
+
+# Field-rule tables: each row binds one declared key to its guard. Extending a
+# section means adding one row and one dataclass attribute, nothing else.
+_Rule = tuple[str, Callable[[Any, str], Any]]
+
+
+def _run_rules(node: Mapping[str, Any], rules: tuple[_Rule, ...], where: str) -> dict[str, Any]:
+    _key_guard(node, {key for key, _ in rules}, where)
+    outcome: dict[str, Any] = {}
+    for key, guard in rules:
+        label = f"{where}.{key}" if where else key
+        outcome[key] = guard(node[key], label)
+    return outcome
 
 
 @dataclass(frozen=True)
 class SensorSpec:
-    """One sensor declaration in a partner profile."""
+    """One sensing channel of the partner device."""
 
     name: str
     sensor_type: str
@@ -76,51 +103,53 @@ class SensorSpec:
     noise_threshold: float
 
     @classmethod
-    def from_mapping(cls, value: Any, index: int) -> "SensorSpec":
-        data = _mapping(value, f"sensors[{index}]")
-        _exact_keys(
-            data,
-            {"name", "type", "channels", "sample_rate_hz", "noise_threshold"},
-            f"sensors[{index}]",
-        )
-        name = _string(data["name"], f"sensors[{index}].name", _IDENTIFIER)
-        sensor_type = _string(data["type"], f"sensors[{index}].type")
-        if sensor_type not in _SENSOR_TYPES:
-            raise ProfileValidationError(
-                f"sensors[{index}].type {sensor_type!r} is not one of {sorted(_SENSOR_TYPES)}"
-            )
-        channels = data["channels"]
-        if isinstance(channels, bool) or not isinstance(channels, int) or not 1 <= channels <= 64:
-            raise ProfileValidationError(
-                f"sensors[{index}].channels must be an integer from 1 to 64"
-            )
-        rate = _positive_number(data["sample_rate_hz"], f"sensors[{index}].sample_rate_hz")
-        noise = _nonnegative_number(data["noise_threshold"], f"sensors[{index}].noise_threshold")
-        if rate > 1_000_000.0:
-            raise ProfileValidationError(
-                f"sensors[{index}].sample_rate_hz exceeds supported limit"
-            )
-        return cls(
-            name=name,
-            sensor_type=sensor_type,
-            channels=channels,
-            sample_rate_hz=rate,
-            noise_threshold=noise,
+    def from_mapping(cls, raw: Any, slot: int) -> "SensorSpec":
+        where = f"sensors[{slot}]"
+        node = _object_guard(raw, where)
+        checked = _run_rules(
+            node,
+            (
+                ("name", lambda raw, at: _text_guard(raw, at, _NAME_RULE)),
+                ("type", _text_guard),
+                ("channels", lambda raw, at: raw),
+                ("sample_rate_hz", lambda raw, at: _numeric_guard(raw, at, 0.0, True)),
+                ("noise_threshold", lambda raw, at: _numeric_guard(raw, at, 0.0, False)),
+            ),
+            where,
         )
 
+        kind = checked["type"]
+        if kind not in _VALID_SENSOR_KINDS:
+            _reject(f"{where}.type {kind!r} is not one of {sorted(_VALID_SENSOR_KINDS)}")
+
+        count = checked["channels"]
+        invalid_count = (
+            isinstance(count, bool)
+            or not isinstance(count, int)
+            or not _CHANNEL_FLOOR <= count <= _CHANNEL_CEILING
+        )
+        if invalid_count:
+            _reject(f"{where}.channels must be an integer from 1 to 64")
+
+        if checked["sample_rate_hz"] > _SAMPLE_RATE_CEILING_HZ:
+            _reject(f"{where}.sample_rate_hz exceeds supported limit")
+
+        return cls(checked["name"], kind, count, checked["sample_rate_hz"], checked["noise_threshold"])
+
     def to_mapping(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "type": self.sensor_type,
-            "channels": self.channels,
-            "sample_rate_hz": self.sample_rate_hz,
-            "noise_threshold": self.noise_threshold,
-        }
+        ordered = (
+            ("name", self.name),
+            ("type", self.sensor_type),
+            ("channels", self.channels),
+            ("sample_rate_hz", self.sample_rate_hz),
+            ("noise_threshold", self.noise_threshold),
+        )
+        return dict(ordered)
 
 
 @dataclass(frozen=True)
 class ActuatorSpec:
-    """Hard physical limits for the partner actuator."""
+    """Physical envelope the partner actuator must never exceed."""
 
     name: str
     max_torque_nm: float
@@ -129,69 +158,75 @@ class ActuatorSpec:
     position_max_rad: float
 
     @classmethod
-    def from_mapping(cls, value: Any) -> "ActuatorSpec":
-        data = _mapping(value, "actuator")
-        _exact_keys(
-            data,
-            {"name", "max_torque_nm", "max_velocity_rad_s", "position_min_rad", "position_max_rad"},
-            "actuator",
-        )
-        name = _string(data["name"], "actuator.name", _IDENTIFIER)
-        max_torque = _positive_number(data["max_torque_nm"], "actuator.max_torque_nm")
-        max_velocity = _positive_number(data["max_velocity_rad_s"], "actuator.max_velocity_rad_s")
-        lower_raw = data["position_min_rad"]
-        if isinstance(lower_raw, bool) or not isinstance(lower_raw, (int, float)):
-            raise ProfileValidationError("actuator.position_min_rad must be a number")
-        lower = float(lower_raw)
-        if not math.isfinite(lower):
-            raise ProfileValidationError("actuator.position_min_rad must be finite")
-        position_max_raw = data["position_max_rad"]
-        if isinstance(position_max_raw, bool) or not isinstance(position_max_raw, (int, float)):
-            raise ProfileValidationError("actuator.position_max_rad must be a number")
-        position_max = float(position_max_raw)
-        if not math.isfinite(lower) or lower >= position_max:
-            raise ProfileValidationError(
-                "actuator.position_min_rad must be less than position_max_rad"
-            )
-        return cls(
-            name=name,
-            max_torque_nm=max_torque,
-            max_velocity_rad_s=max_velocity,
-            position_min_rad=lower,
-            position_max_rad=position_max,
+    def from_mapping(cls, raw: Any) -> "ActuatorSpec":
+        node = _object_guard(raw, "actuator")
+        checked = _run_rules(
+            node,
+            (
+                ("name", lambda raw, at: _text_guard(raw, at, _NAME_RULE)),
+                ("max_torque_nm", lambda raw, at: _numeric_guard(raw, at, 0.0, True)),
+                ("max_velocity_rad_s", lambda raw, at: _numeric_guard(raw, at, 0.0, True)),
+                ("position_min_rad", lambda raw, at: _numeric_guard(raw, at, None, False)),
+                ("position_max_rad", lambda raw, at: _numeric_guard(raw, at, None, False)),
+            ),
+            where="actuator",
         )
 
+        if checked["position_min_rad"] >= checked["position_max_rad"]:
+            _reject("actuator.position_min_rad must be less than position_max_rad")
+
+        return cls(checked["name"], checked["max_torque_nm"], checked["max_velocity_rad_s"], checked["position_min_rad"], checked["position_max_rad"])
+
     def to_mapping(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "max_torque_nm": self.max_torque_nm,
-            "max_velocity_rad_s": self.max_velocity_rad_s,
-            "position_min_rad": self.position_min_rad,
-            "position_max_rad": self.position_max_rad,
-        }
+        ordered = (
+            ("name", self.name),
+            ("max_torque_nm", self.max_torque_nm),
+            ("max_velocity_rad_s", self.max_velocity_rad_s),
+            ("position_min_rad", self.position_min_rad),
+            ("position_max_rad", self.position_max_rad),
+        )
+        return dict(ordered)
 
 
 @dataclass(frozen=True)
 class FaultPath:
-    """Deterministic fallback action for one sensor failure."""
+    """Predetermined device response when one sensor is lost."""
 
     sensor: str
     action: str
 
     @classmethod
-    def from_mapping(cls, value: Any, index: int) -> "FaultPath":
-        data = _mapping(value, f"fault_paths[{index}]")
-        _exact_keys(data, {"sensor", "action"}, f"fault_paths[{index}]")
-        sensor = _string(data["sensor"], f"fault_paths[{index}].sensor", _IDENTIFIER)
-        action = _string(data["action"], f"fault_paths[{index}].action")
-        if action not in _FALLBACK_ACTIONS:
-            raise ProfileValidationError(
-                f"fault_paths[{index}].action {action!r} is not one of {sorted(_FALLBACK_ACTIONS)}"
+    def from_mapping(cls, raw: Any, slot: int) -> "FaultPath":
+        where = f"fault_paths[{slot}]"
+        node = _object_guard(raw, where)
+        checked = _run_rules(
+            node,
+            (
+                ("sensor", lambda raw, at: _text_guard(raw, at, _NAME_RULE)),
+                ("action", _text_guard),
+            ),
+            where,
+        )
+
+        response = checked["action"]
+        if response not in _VALID_FAULT_RESPONSES:
+            _reject(
+                f"{where}.action {response!r} is not one of {sorted(_VALID_FAULT_RESPONSES)}"
             )
-        return cls(sensor=sensor, action=action)
+        return cls(checked["sensor"], response)
 
     def to_mapping(self) -> dict[str, str]:
-        return {"sensor": self.sensor, "action": self.action}
+        return dict((("sensor", self.sensor), ("action", self.action)))
+
+
+def _text_array(node: Any, where: str) -> tuple[str, ...]:
+    if not isinstance(node, list) or not node:
+        _reject(f"{where} must be a non-empty array")
+    return tuple(_text_guard(item, f"{where}[{slot}]") for slot, item in enumerate(node))
+
+
+def _has_repeat(items: tuple[str, ...]) -> bool:
+    return len(set(items)) != len(items)
 
 
 @dataclass(frozen=True)
@@ -206,88 +241,74 @@ class PartnerProfile:
     fault_paths: tuple[FaultPath, ...]
 
     @classmethod
-    def from_mapping(cls, value: Any) -> "PartnerProfile":
-        data = _mapping(value, "profile")
-        _exact_keys(
-            data,
-            {"schema_version", "profile_id", "sensors", "intent_classes", "actuator", "fault_paths"},
-            "profile",
-        )
-        schema_version = _string(data["schema_version"], "schema_version")
-        if schema_version != "1.0":
-            raise ProfileValidationError(
-                f"unsupported schema_version {schema_version!r}; expected '1.0'"
-            )
-        profile_id = _string(data["profile_id"], "profile_id", _IDENTIFIER)
+    def from_mapping(cls, raw: Any) -> "PartnerProfile":
+        node = _object_guard(raw, "profile")
+        declared = {entry.name for entry in dataclass_fields(cls)}
+        _key_guard(node, declared, "profile")
 
-        raw_sensors = data["sensors"]
-        if not isinstance(raw_sensors, list) or not raw_sensors:
-            raise ProfileValidationError("sensors must be a non-empty array")
+        version = _text_guard(node["schema_version"], "schema_version")
+        if version != "1.0":
+            _reject(f"unsupported schema_version {version!r}; expected '1.0'")
+        identifier = _text_guard(node["profile_id"], "profile_id", _NAME_RULE)
+
+        sensor_block = node["sensors"]
+        if not isinstance(sensor_block, list) or not sensor_block:
+            _reject("sensors must be a non-empty array")
         sensors = tuple(
-            SensorSpec.from_mapping(item, index) for index, item in enumerate(raw_sensors)
+            SensorSpec.from_mapping(entry, slot) for slot, entry in enumerate(sensor_block)
         )
-        sensor_names = [sensor.name for sensor in sensors]
-        if len(set(sensor_names)) != len(sensor_names):
-            raise ProfileValidationError("sensor names must be unique")
+        names = tuple(unit.name for unit in sensors)
+        if _has_repeat(names):
+            _reject("sensor names must be unique")
 
-        raw_intents = data["intent_classes"]
-        if not isinstance(raw_intents, list) or not raw_intents:
-            raise ProfileValidationError("intent_classes must be a non-empty array")
-        intents = tuple(
-            _string(item, f"intent_classes[{index}]") for index, item in enumerate(raw_intents)
-        )
-        if len(set(intents)) != len(intents):
-            raise ProfileValidationError("intent_classes must be unique")
-        if len(intents) > 64:
-            raise ProfileValidationError("intent_classes cannot contain more than 64 classes")
+        intents = _text_array(node["intent_classes"], "intent_classes")
+        if _has_repeat(intents):
+            _reject("intent_classes must be unique")
+        if len(intents) > _INTENT_CEILING:
+            _reject("intent_classes cannot contain more than 64 classes")
 
-        actuator = ActuatorSpec.from_mapping(data["actuator"])
-        raw_faults = data["fault_paths"]
-        if not isinstance(raw_faults, list) or not raw_faults:
-            raise ProfileValidationError("fault_paths must be a non-empty array")
+        actuator = ActuatorSpec.from_mapping(node["actuator"])
+
+        fault_block = node["fault_paths"]
+        if not isinstance(fault_block, list) or not fault_block:
+            _reject("fault_paths must be a non-empty array")
         fault_paths = tuple(
-            FaultPath.from_mapping(item, index) for index, item in enumerate(raw_faults)
+            FaultPath.from_mapping(entry, slot) for slot, entry in enumerate(fault_block)
         )
-        fault_sensors = [path.sensor for path in fault_paths]
-        if len(set(fault_sensors)) != len(fault_sensors):
-            raise ProfileValidationError("fault_paths must contain one path per sensor")
-        if set(fault_sensors) != set(sensor_names):
-            missing = sorted(set(sensor_names) - set(fault_sensors))
-            unknown = sorted(set(fault_sensors) - set(sensor_names))
-            details = []
-            if missing:
-                details.append(f"missing {', '.join(missing)}")
-            if unknown:
-                details.append(f"unknown {', '.join(unknown)}")
-            raise ProfileValidationError(
-                "fault_paths do not cover sensors: " + "; ".join(details)
-            )
+        covered = tuple(route.sensor for route in fault_paths)
+        if _has_repeat(covered):
+            _reject("fault_paths must contain one path per sensor")
+        if set(covered) != set(names):
+            gaps = sorted(set(names).difference(covered))
+            stray = sorted(set(covered).difference(names))
+            parts = []
+            if gaps:
+                parts.append(f"missing {', '.join(gaps)}")
+            if stray:
+                parts.append(f"unknown {', '.join(stray)}")
+            _reject("fault_paths do not cover sensors: " + "; ".join(parts))
 
-        return cls(
-            schema_version=schema_version,
-            profile_id=profile_id,
-            sensors=sensors,
-            intent_classes=intents,
-            actuator=actuator,
-            fault_paths=fault_paths,
-        )
+        return cls(version, identifier, sensors, intents, actuator, fault_paths)
 
     @classmethod
-    def from_json_file(cls, path: Path) -> "PartnerProfile":
+    def from_json_file(cls, source: Path) -> "PartnerProfile":
         try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-        except OSError as exc:
-            raise FileNotFoundError(f"unable to read profile {path}: {exc}") from exc
-        except json.JSONDecodeError as exc:
-            raise ProfileValidationError(f"invalid JSON in {path}: {exc}") from exc
-        return cls.from_mapping(raw)
+            text = source.read_text(encoding="utf-8")
+        except OSError as failure:
+            raise FileNotFoundError(f"unable to read profile {source}: {failure}") from failure
+        try:
+            document = json.JSONDecoder().decode(text)
+        except json.JSONDecodeError as failure:
+            raise ProfileValidationError(f"invalid JSON in {source}: {failure}") from failure
+        return cls.from_mapping(document)
 
     def to_mapping(self) -> dict[str, Any]:
-        return {
-            "schema_version": self.schema_version,
-            "profile_id": self.profile_id,
-            "sensors": [sensor.to_mapping() for sensor in self.sensors],
-            "intent_classes": list(self.intent_classes),
-            "actuator": self.actuator.to_mapping(),
-            "fault_paths": [path.to_mapping() for path in self.fault_paths],
-        }
+        pairs = (
+            ("schema_version", self.schema_version),
+            ("profile_id", self.profile_id),
+            ("sensors", [unit.to_mapping() for unit in self.sensors]),
+            ("intent_classes", list(self.intent_classes)),
+            ("actuator", self.actuator.to_mapping()),
+            ("fault_paths", [route.to_mapping() for route in self.fault_paths]),
+        )
+        return dict(pairs)

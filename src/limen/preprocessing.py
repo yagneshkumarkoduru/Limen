@@ -88,6 +88,57 @@ def extract_features(
     return np.concatenate([mav, rms, wl, zc, ssc, imu_mean, imu_std])
 
 
+_RICH_BANDS_HZ: tuple[tuple[float, float], ...] = ((20.0, 60.0), (60.0, 120.0), (120.0, 450.0))
+
+
+def extract_features_rich(
+    emg_block: NDArray[np.float64],
+    imu_block: NDArray[np.float64],
+    fs: float = 1000.0,
+) -> NDArray[np.float64]:
+    """Extended feature vector: time-domain + Hjorth + relative band powers.
+
+    Per EMG channel: MAV, RMS, waveform length, zero crossings, slope-sign
+    changes, Hjorth activity/mobility/complexity, three relative band powers
+    (20-60, 60-120, 120-450 Hz of the total in-band power) and log total
+    power. IMU channels contribute mean and standard deviation as before.
+    """
+    if emg_block.ndim != 2:
+        raise ValueError(f"emg_block must be 2-D, got shape {emg_block.shape}")
+    n = emg_block.shape[0]
+    if n < 8:
+        raise ValueError("emg_block too short for rich feature extraction")
+
+    base = extract_features(emg_block, imu_block)
+    n_ch = emg_block.shape[1]
+    n_imu_feats = base.shape[0] - 5 * n_ch
+    time_feats = base[: 5 * n_ch]
+
+    var0 = emg_block.var(axis=0) + 1e-12
+    d1 = np.diff(emg_block, axis=0)
+    var1 = d1.var(axis=0) + 1e-12
+    mobility = np.sqrt(var1 / var0)
+    d2 = np.diff(d1, axis=0)
+    var2 = d2.var(axis=0) + 1e-12
+    complexity = np.sqrt(var2 / var1) / (mobility + 1e-12)
+
+    freqs = np.fft.rfftfreq(n, d=1.0 / fs)
+    psd = np.abs(np.fft.rfft(emg_block, axis=0)) ** 2 / float(n)
+    total = np.zeros(n_ch, dtype=np.float64)
+    band_parts: list[NDArray[np.float64]] = []
+    for lo, hi in _RICH_BANDS_HZ:
+        mask = (freqs >= lo) & (freqs < hi)
+        band = psd[mask].mean(axis=0)
+        band_parts.append(band)
+        total += band
+    rel_bands = [b / (total + 1e-12) for b in band_parts]
+    log_total = np.log(total + 1e-12)
+
+    return np.concatenate(
+        [time_feats, mobility, complexity, *rel_bands, log_total, base[-n_imu_feats:]]
+    )
+
+
 def window_segment(
     segment: Segment,
     emg_filtered: NDArray[np.float64],

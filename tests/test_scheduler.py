@@ -44,3 +44,17 @@ def test_scheduler_is_deterministic_and_rejects_unordered_input() -> None:
     assert fabric.run(events, 4_000) == fabric.run(events, 4_000)
     with pytest.raises(ValueError, match="ordered"):
         fabric.run((SignalEvent(1_000, True), SignalEvent(0, True)), 2_000)
+
+
+def test_duplicate_timestamps_are_rejected() -> None:
+    """Two distinct signal events at one timestamp are ambiguous and rejected."""
+    fabric = EventizedMultiRateFabric()
+    with pytest.raises(ValueError, match="duplicate"):
+        fabric.run((SignalEvent(1_000, True), SignalEvent(1_000, False)), 2_000)
+
+
+def test_safety_period_has_a_meaningful_minimum() -> None:
+    """A safety period below the documented supervision floor is meaningless."""
+    with pytest.raises(ValueError, match="safety_period_us"):
+        EventizedMultiRateFabric(safety_period_us=1)
+    EventizedMultiRateFabric(safety_period_us=100)

@@ -9,6 +9,7 @@ veto any command beyond absolute hardware bounds - even a NOMINAL one.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from limen.config import BenchmarkConfig
 from limen.inference import Prediction
@@ -16,6 +17,7 @@ from limen.safety import (
     ConfidenceCoupledSafetyEnvelope,
     EnvelopeState,
     IndependentHardwareSupervisor,
+    SignalQuality,
     SignalQualityGate,
     ActuatorCommand,
 )
@@ -133,3 +135,46 @@ def test_recovery_requires_high_confidence() -> None:
     assert env.state is EnvelopeState.DEGRADED
     cmd = env.evaluate(Prediction(intent="knee_flexion", confidence=0.95), q)
     assert cmd.envelope_state is EnvelopeState.NOMINAL
+
+
+def test_reset_requires_authorization_key() -> None:
+    """SAFE_HALT must not be clearable by an unauthenticated caller."""
+    cfg = _cfg()
+    env = ConfidenceCoupledSafetyEnvelope(cfg.safety)
+    sqg = SignalQualityGate()
+    seg = generate_segment("knee_flexion", cfg.signal, np.random.default_rng(29))
+    q = sqg.assess(seg.emg[2000:2200])
+
+    for _ in range(cfg.safety.persistence_windows + 1):
+        env.evaluate(Prediction(intent="knee_flexion", confidence=0.10), q)
+    assert env.state is EnvelopeState.SAFE_HALT
+
+    with pytest.raises((PermissionError, TypeError)):
+        env.reset()  # type: ignore[call-arg]
+    with pytest.raises(PermissionError):
+        env.reset("not-the-key")
+    assert env.state is EnvelopeState.SAFE_HALT
+
+    env.reset(env.reset_key)
+    assert env.state is EnvelopeState.NOMINAL
+
+
+def test_signal_quality_has_no_dict_for_attribute_injection() -> None:
+    """Frozen alone leaves __dict__ open on some versions; slots close it."""
+    q = SignalQuality(reliability=0.5, flatline_channels=(), artifact_detected=False)
+    assert not hasattr(q, "__dict__")
+    # Frozen slotted dataclasses raise TypeError on newer interpreters,
+    # AttributeError on older ones; both confirm injection is blocked.
+    with pytest.raises((AttributeError, TypeError)):
+        q.injected = True  # type: ignore[attr-defined]
+
+
+def test_assess_rejects_non_finite_input() -> None:
+    """NaN or Inf windows must not bypass the quality checks."""
+    sqg = SignalQualityGate()
+    block = np.ones((200, 4))
+    for bad_value in (np.nan, np.inf, -np.inf):
+        block[100, 2] = bad_value
+        with pytest.raises(ValueError, match="finite"):
+            sqg.assess(block)
+        block[100, 2] = 1.0
