@@ -1,0 +1,52 @@
+{
+  "experiment": "dann+coral+per-subject-bn loso",
+  "seed": 20261011,
+  "epochs": 60,
+  "calibration_fraction": 0.1,
+  "protocol": "leave-one-subject-out; held-out subject split by trial into calibration (first trials per gesture, labels unused) and test partitions; test windows never influence CORAL, training, or batch-norm statistics",
+  "environment": {
+    "python": "3.11.15",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "cuda_available": false,
+    "gpu": null,
+    "platform": "Windows-10-10.0.26300-SP0"
+  },
+  "per_subject": {
+    "female_1": {
+      "accuracy": 0.138412,
+      "n_test_windows": 47142,
+      "n_calibration_windows": 5238,
+      "n_train_windows": 209520
+    },
+    "female_2": {
+      "accuracy": 0.34324,
+      "n_test_windows": 47142,
+      "n_calibration_windows": 5238,
+      "n_train_windows": 209520
+    },
+    "female_3": {
+      "accuracy": 0.299881,
+      "n_test_windows": 47142,
+      "n_calibration_windows": 5238,
+      "n_train_windows": 209520
+    },
+    "male_1": {
+      "accuracy": 0.285414,
+      "n_test_windows": 47142,
+      "n_calibration_windows": 5238,
+      "n_train_windows": 209520
+    },
+    "male_2": {
+      "accuracy": 0.226592,
+      "n_test_windows": 47142,
+      "n_calibration_windows": 5238,
+      "n_train_windows": 209520
+    }
+  },
+  "aggregate": {
+    "accuracy_mean": 0.258708,
+    "accuracy_std": 0.070791,
+    "n_folds": 5
+  }
+}

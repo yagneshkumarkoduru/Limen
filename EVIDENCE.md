@@ -161,6 +161,34 @@ results/real_semg_within_subject.json
 |---|---|---|
 | rf-rich | 0.7797 | 0.5037 |
 
+### Domain-adversarial training attempt (DANN + CORAL + per-subject BN)
+
+Run date: 2026-11-14. Runner: experiments/run_dann_loso.py. Artifact:
+results/real_semg_loso_dann.json. 60 epochs, seed 20261011, torch 2.15.0 CPU.
+
+A three-stage domain-adaptation stack (CORAL covariance pre-alignment,
+domain-adversarial neural network with gradient reversal, per-subject
+batch-norm recalibration from unlabeled calibration windows) was trained
+under the same strict LOSO protocol (held-out subject test windows never
+influence alignment, adversarial training, or BN statistics).
+
+| Subject | DANN LOSO accuracy |
+|---|---|
+| female_1 | 0.1384 |
+| female_2 | 0.3432 |
+| female_3 | 0.2999 |
+| male_1 | 0.2854 |
+| male_2 | 0.2266 |
+| **Aggregate** | **0.2587 +/- 0.0708** |
+
+Result: statistically identical to the feature-pipeline LOSO baseline
+(0.26-0.28). The domain-adaptation stack did NOT close the cross-subject
+gap on this dataset. This is a genuine negative result: the cross-subject
+variance in 2-channel sEMG from 5 subjects is not removed by second-order
+covariance alignment or adversarial feature learning at this scale. Closing
+the gap requires either more subjects, more channels, or a fundamentally
+different representation - documented as an open research problem.
+
 ### Interpretation limits
 
 - Cross-subject generalization (LOSO) is near chance level for all models
